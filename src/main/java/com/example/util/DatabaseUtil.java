@@ -35,10 +35,10 @@ public class DatabaseUtil {
         userRepository.save(personIdentifier);
     }
 
-    public List<String> getMessages(){
-        List<String> messages = new ArrayList<>();
+    public List<MessageJSON> getMessages(){
+        List<MessageJSON> messages = new ArrayList<>();
         for(MessageJSON message:messageRepository.findAll()){
-            messages.add(message.getMessage());
+            messages.add(message);
         }
         return messages;
     }
