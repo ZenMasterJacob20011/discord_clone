@@ -5,6 +5,7 @@ package com.example.controller;
 import com.example.json.MessageJSON;
 
 import com.example.util.DatabaseUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,22 +22,21 @@ public class ChatController {
     private DatabaseUtil databaseUtil;
 
     @GetMapping("/chat")
-    public String goToChat(Model model){
-        MessageJSON mj = new MessageJSON();
-        model.addAttribute("mymessage",mj);
+    public String goToChat(){
         return "chat";
     }
 
 
     @GetMapping("/getmessages")
     @ResponseBody
-    public List<String> sendMessages(){
+    public List<MessageJSON> sendMessages(){
         return databaseUtil.getMessages();
     }
 
 
     @PostMapping(value = "/postmessages",consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<?> addMessageToDatabase(@RequestBody MessageJSON input){
+    public ResponseEntity<?> addMessageToDatabase(@RequestBody MessageJSON input, HttpServletRequest request){
+        input.setUsername((String)request.getSession().getAttribute("currentuser"));
         databaseUtil.saveMessage(input);
         return ResponseEntity.ok(input);
     }
