@@ -2,6 +2,9 @@ package com.example.controller;
 
 import com.example.json.PersonIdentifier;
 import com.example.util.DatabaseUtil;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,9 +38,13 @@ public class UserController {
     }
 
     @PostMapping("/verify")
-    public String logInUsrPass(@ModelAttribute("PersonIdentifier") PersonIdentifier personIdentifier) {
+    public String logInUsrPass(@ModelAttribute("PersonIdentifier") PersonIdentifier personIdentifier, HttpServletRequest request, HttpServletResponse response) {
         if(databaseUtil.isValidUser(personIdentifier)) {
-            return "yourin";
+            Cookie jwtTokenCookie = new Cookie("username",personIdentifier.getUsername());
+            jwtTokenCookie.setDomain("localhost");
+            request.getSession().setAttribute("currentuser",personIdentifier.getUsername());
+            response.addCookie(jwtTokenCookie);
+            return "redirect:/";
         }
 
         return "redirect:/login";
