@@ -1,16 +1,20 @@
 package com.example.controller;
 
+import com.example.json.JWTJSON;
 import com.example.json.PersonIdentifier;
 import com.example.util.DatabaseUtil;
+import com.example.util.JWTService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 
 @Controller
 public class UserController {
@@ -18,36 +22,19 @@ public class UserController {
     @Autowired
     private DatabaseUtil databaseUtil;
 
-    @GetMapping("/")
-    public String homePage() {
-        return "index";
-    }
-
-    @GetMapping("/signup")
-    public String signUpPage(Model model) {
-        PersonIdentifier pi = new PersonIdentifier();
-        model.addAttribute("personIdentifier", pi);
-        return "signuppage";
-    }
-
-    @GetMapping("/login")
-    public String logInPage(Model model) {
-        PersonIdentifier pi = new PersonIdentifier();
-        model.addAttribute("personIdentifier", pi);
-        return "loginpage";
-    }
-
+    @ResponseBody
     @PostMapping("/verify")
-    public String logInUsrPass(@ModelAttribute("PersonIdentifier") PersonIdentifier personIdentifier, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> logInUsrPass(@RequestBody PersonIdentifier personIdentifier) {
+        HashMap<String,String> map = new HashMap<>();
         if(databaseUtil.isValidUser(personIdentifier)) {
-            Cookie jwtTokenCookie = new Cookie("username",personIdentifier.getUsername());
-            jwtTokenCookie.setDomain("localhost");
-            request.getSession().setAttribute("currentuser",personIdentifier.getUsername());
-            response.addCookie(jwtTokenCookie);
-            return "redirect:/";
+            JWTService jwtService = new JWTService();
+            String JWT = jwtService.createJWT(personIdentifier);
+            databaseUtil.saveJWT(new JWTJSON(JWT));
+            map.put("token",JWT);
+            return new ResponseEntity<>(map,HttpStatus.OK);
         }
-
-        return "redirect:/login";
+        map.put("Error","Username or Password is incorrect");
+        return new ResponseEntity<>(map, HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping("/save")
