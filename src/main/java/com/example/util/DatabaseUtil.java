@@ -1,7 +1,9 @@
 package com.example.util;
 
+import com.example.json.JWTJSON;
 import com.example.json.MessageJSON;
 import com.example.json.PersonIdentifier;
+import com.example.repositories.JWTRepository;
 import com.example.repositories.MessageRepository;
 import com.example.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,8 @@ public class DatabaseUtil {
     public MessageRepository messageRepository;
     @Autowired
     public UserRepository userRepository;
+    @Autowired
+    public JWTRepository jwtRepository;
 
     public boolean isValidUser(String userName, String password){
         for (PersonIdentifier userRepPI : userRepository.findAll()) {
@@ -45,5 +49,17 @@ public class DatabaseUtil {
 
     public void saveMessage(MessageJSON messageJSON){
         messageRepository.save(messageJSON);
+    }
+
+    public void saveJWT(JWTJSON jwtjson){
+        jwtRepository.save(jwtjson);
+    }
+    public boolean containsJWT(String JWT){
+        for(JWTJSON jwtjson:jwtRepository.findAll()){
+            if(jwtjson.getJWT().equals(JWT)){
+                return true;
+            }
+        }
+        return false;
     }
 }
