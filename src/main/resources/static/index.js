@@ -1,32 +1,26 @@
+const decodedJWTJSON = parseJwt(localStorage.getItem("token"));
 
-function sendMessage() {
-    var curUser = document.cookie.split("=")[1];
+async function sendMessage() {
     const input = document.querySelector("#typedinput").value;
-    fetch('http://localhost:8080/postmessages', {
+    const response = await fetch('http://localhost:8080/postmessages', {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem("token")
         },
         body: JSON.stringify({'message': input})
-    }).then(response => response.json())
-        .then(response => console.log(JSON.stringify(response)))
+    });
+    let message = await response.json();
     document.querySelector("#typedinput").value = '';
-    const messageBox = document.querySelector("#messages");
-    const divMessage = document.createElement("div");
-    const tempMessage = document.createElement("p");
-    const tempUserMessage = document.createElement("p");
-    divMessage.classList.add("d-flex", "flex-row", "justify-content-start", "mb-4");
-    tempMessage.classList.add("small","p-2","me-3","mb-1","text-white","rounded-3","bg-primary");
-    tempUserMessage.textContent = curUser;
-    tempMessage.textContent = input;
-    divMessage.appendChild(tempMessage);
-    messageBox.appendChild(divMessage);
+    if(response.ok) {
+        addMessage(message);
+    }else{
+        alert("Invalid auth token");
+    }
 }
 
-async function grabAllMessages() {
-    const messageBox = document.querySelector("#messages");
-    let messages = []
+async function getMessages() {
     const response = await fetch("http://localhost:8080/getmessages", {
         method: 'GET',
         headers: {
@@ -34,27 +28,46 @@ async function grabAllMessages() {
             'Content-Type': "application/json"
         }
     });
-    messages = await response.json();
-    console.log(messages);
-    var curUser = document.cookie.split("=")[1];
-    console.log(curUser);
+    let messages = await response.json();
     for (const curMessage of messages) {
-        console.log(curMessage);
-        let message = curMessage.message;
-        let username = curMessage.username;
-        const divMessage = document.createElement("div");
-        const tempMessage = document.createElement("p");
-        if(curUser === username) {
-            divMessage.classList.add("d-flex", "flex-row", "justify-content-start", "mb-4");
-        }else{
-            divMessage.classList.add("d-flex", "flex-row", "justify-content-end", "mb-4")
-        }
-        tempMessage.classList.add("small","p-2","me-3","mb-1","text-white","rounded-3","bg-primary");
-        tempMessage.textContent = message;
-        divMessage.appendChild(tempMessage);
-        messageBox.appendChild(divMessage);
+        addMessage(curMessage);
     }
 }
+
+
+function addMessage(jsonData) {
+    const curUser = decodedJWTJSON.sub;
+
+    const messageBox = document.querySelector("#messages");
+    const divMessage = document.createElement("div");
+    const justADiv = document.createElement('div');
+    const tempMessage = document.createElement("p");
+    const tempUserMessage = document.createElement("p");
+    if(jsonData.username === curUser) {
+        divMessage.classList.add("d-flex", "flex-row", "justify-content-start", "mb-4");
+    }else{
+        divMessage.classList.add("d-flex", "flex-row", "justify-content-end", "mb-4");
+    }
+    tempMessage.classList.add("small","p-2","me-3","text-white","rounded-3","bg-primary");
+    tempUserMessage.classList.add("small","p-2","mb-1","font-weight-bold");
+    tempUserMessage.textContent = jsonData.username;
+    tempMessage.textContent = jsonData.message;
+    justADiv.appendChild(tempMessage);
+    divMessage.appendChild(tempUserMessage);
+    divMessage.appendChild(justADiv);
+    messageBox.appendChild(divMessage);
+}
+
+function parseJwt (token) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+
 
 
 document.addEventListener('keydown',function (e) {
