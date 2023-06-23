@@ -11,12 +11,10 @@ async function sendMessage() {
         },
         body: JSON.stringify({'message': input})
     });
-    let message = await response.json();
     document.querySelector("#typedinput").value = '';
-    if(response.ok) {
-        addMessage(message);
-    }else{
-        alert("Invalid auth token");
+    console.log(response.status);
+    if(response.status === 403) {
+        window.location.href = "http://localhost:8080";
     }
 }
 
@@ -77,3 +75,28 @@ document.addEventListener('keydown',function (e) {
         }
     }
 })
+
+let stompClient = null
+function connect() {
+    let socket = new SockJS('/gs-guide-websocket');
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, function (frame) {
+        // setConnected(true);
+        console.log('Connected: ' + frame);
+        stompClient.subscribe('/topic/chat', function (messageJSON) {
+            // console.log(greeting);
+            addMessage(JSON.parse(messageJSON.body));
+        });
+    });
+}
+
+function disconnect() {
+    if (stompClient !== null) {
+        stompClient.disconnect();
+    }
+    console.log("Disconnected");
+}
+
+window.onbeforeunload = function (){
+    disconnect();
+}
