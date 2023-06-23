@@ -13,10 +13,24 @@ async function verifyUserHandler(userNameId, passwordId){
     const responseJSON = await response.json();
     if(response.ok){
         localStorage.setItem("token",responseJSON.token);
-        window.location.href = "http://localhost:8080";
+        window.location.href = "http://localhost:8080/login";
     }else{
         alert("Invalid username/password");
     }
     username.value = '';
     password.value = '';
 }
+
+async function validatejwt(token) {
+    let response = await fetch("http://localhost:8080/chat", {
+        method: "GET",
+        headers: {
+            'Authorization': token,
+        },
+    });
+    if(!response.redirected){
+        document.write(await response.text());
+        document.close();
+    }
+}
+

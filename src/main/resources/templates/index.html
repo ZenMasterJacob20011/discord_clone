@@ -3,26 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link href="webjars/bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <a href="http://localhost:8080/login">Login</a><br>
-    <a href="http://localhost:8080/signup">Sign Up</a><br>
-    <button class="btn btn-primary" onclick="goToChat()">Go to chat</button>
-    <script>
-        async function goToChat() {
-            let response = await fetch("http://localhost:8080/chat",{
-                method: "GET",
-                headers:{
-                    'Authorization': localStorage.getItem("token")
-                }
-            })
-            const theDoc = await response.text();
-            // console.log(response.body);
-            // window.location.href = "chat.html";
-            document.write(theDoc);
-        }
-    </script>
+<nav class="navbar bg-light">
+    <div class="container-fluid">
+        <span class="navbar-brand">Discord Clone</span>
+        <ul class="navbar-nav justify-content-end">
+            <li class="nav-item">
+                <a class="nav-link" href="http://localhost:8080/login">Login</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="http://localhost:8080/signup">Sign Up</a>
+            </li>
+        </ul>
+
+    </div>
+</nav>
+<script src="webjars/bootstrap/5.2.3/js/bootstrap.min.js"></script>
 </body>
 </html>

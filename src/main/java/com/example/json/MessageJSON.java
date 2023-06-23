@@ -15,6 +15,15 @@ public class MessageJSON {
     private String message;
 
     private String username;
+
+    public MessageJSON() {
+    }
+
+    public MessageJSON(String message, String username) {
+        this.message = message;
+        this.username = username;
+    }
+
     public String getMessage() {
         return message;
     }
@@ -37,5 +46,14 @@ public class MessageJSON {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "MessageJSON{" +
+                "id=" + id +
+                ", message='" + message + '\'' +
+                ", username='" + username + '\'' +
+                '}';
     }
 }
