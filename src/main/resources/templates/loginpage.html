@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Sign Up Page</title>
-    <script src="/loginpage.js"></script>
+    <script type="text/javascript" src="/loginpage.js"></script>
 </head>
-<body>
+<body onload="validatejwt(localStorage.getItem('token'))">
 <div id="myform">
     <label for="username">Enter Username:</label><br>
     <input type="text" name="username" id="username"><br>
