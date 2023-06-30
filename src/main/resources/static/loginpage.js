@@ -1,21 +1,30 @@
-async function verifyUserHandler(userNameId, passwordId){
+async function verifyUserHandler(userNameId, passwordId) {
     const username = document.querySelector(userNameId);
     const password = document.querySelector(passwordId);
-    const response = await fetch("http://localhost:8080/verify",{
+    const response = await fetch("http://localhost:8080/verify", {
         method: "POST",
         headers: {
             'Accept': "*/*",
             'Content-Type': "application/json"
         },
-        body: JSON.stringify({'username':username.value,
-                                    'password':password.value})
+        body: JSON.stringify({
+            'username': username.value,
+            'password': password.value
+        })
     });
     const responseJSON = await response.json();
-    if(response.ok){
-        localStorage.setItem("token",responseJSON.token);
+    if (response.ok) {
+        localStorage.setItem("token", responseJSON.token);
         window.location.href = "http://localhost:8080/login";
-    }else{
-        alert("Invalid username/password");
+    } else {
+        //add login or password is invalid text to username part also change the text to red
+        //add login or password is invalid to password part
+        const invalidUsername = document.querySelector("label[for='username']")
+        invalidUsername.innerText = "Username - login or password is invalid";
+        invalidUsername.classList.add("text-danger")
+        const invalidPassword = document.querySelector("label[for='password']")
+        invalidPassword.innerText = "Password - login or password is invalid";
+        invalidPassword.classList.add("text-danger")
     }
     username.value = '';
     password.value = '';
@@ -28,7 +37,7 @@ async function validatejwt(token) {
             'Authorization': token,
         },
     });
-    if(!response.redirected){
+    if (!response.redirected) {
         document.write(await response.text());
         document.close();
     }

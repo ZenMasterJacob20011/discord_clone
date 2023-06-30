@@ -8,70 +8,69 @@
     <script src="webjars/jquery/3.6.4/jquery.min.js"></script>
     <script src="webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="webjars/bootstrap/5.2.3/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.3.1/mdb.min.css" rel="stylesheet"/>
+    <link href="/css/chatpage.css" rel="stylesheet">
 </head>
 <body onload="connect();getMessages()">
-<section class="pb-4">
-    <div class="bg-white border rounded-5">
 
-        <section class="p-4 w-100" style="background-color: #eee; border-radius: .5rem .5rem 0 0;">
-            <style>
-                #chat2 .form-control {
-                    border-color: transparent;
-                }
-
-                #chat2 .form-control:focus {
-                    border-color: transparent;
-                    box-shadow: inset 0px 0px 0px 1px transparent;
-                }
-
-                .divider:after,
-                .divider:before {
-                    content: "";
-                    flex: 1;
-                    height: 1px;
-                    background: #eee;
-                }
-            </style>
-
-            <div class="row d-flex justify-content-center">
-                <div class="col-md-10 col-lg-8 col-xl-6">
-
-                    <div class="card" id="chat2">
-                        <div class="card-header d-flex justify-content-between align-items-center p-3">
-                            <h5 class="mb-0">Chat</h5>
-                            <button type="button" class="btn btn-primary btn-sm" data-mdb-ripple-color="dark">Let's Chat
-                                App
-                            </button>
-                        </div>
-                        <div id="messages" class="card-body overflow-auto"
-                             style="position: relative; height: 400px">
-                        </div>
-                        <div class="card-footer text-muted d-flex justify-content-start align-items-center p-3">
-                            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
-                                 alt="avatar 3" style="width: 40px; height: 100%;">
-                            <input type="text" class="form-control form-control-lg" id="typedinput"
-                                      placeholder="Type message">
-                            <a class="ms-1 text-muted"><i class="fas fa-paperclip"></i></a>
-                            <a onclick="getMessages()" class="ms-3 text-muted"><i class="fas fa-smile"></i></a>
-                            <a onclick="sendMessage()" class="ms-3"><i class="fas fa-paper-plane"></i></a>
-                        </div>
+<div class="container m-0 p-0" style="max-width: 100%">
+    <div class="row">
+        <!--Sidebar-->
+        <div class="col-2 p-0 bg-dark" style="width: 72px">
+            <ul class="squircles">
+                <li class="squircle"></li>
+                <li class="squircle"></li>
+                <li class="squircle"></li>
+                <li class="squircle"></li>
+                <li class="squircle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="green" class="bi bi-plus-lg" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+                    </svg>
+                </li>
+            </ul>
+        </div>
+        <!--Group sidebar-->
+        <div class="col-2 p-0 group-sidebar">
+            <div class="card">
+                <!--Card header-->
+                <div class="card-header p-0 h-100" style="height: 48px">
+                    <div class="dropdown h-100" style="width: 100%">
+                        <button class="btn btn-secondary w-100 dropdown-toggle p-0" type="button" data-bs-toggle="dropdown" style="height: 48px">
+                            Group Name
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-item">1</li>
+                            <li class="dropdown-item">2</li>
+                            <li class="dropdown-item">3</li>
+                        </ul>
                     </div>
-
+                </div>
+                <!--Card body-->
+                <div class="card-body"></div>
+                <!--Card Footer-->
+                <div class="card-footer"></div>
+            </div>
+        </div>
+        <!--Message box-->
+        <div class="col p-0">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center p-3">
+                    <h5 class="mb-0">Chat</h5>
+                </div>
+                <div id="messages" class="card-body overflow-auto"
+                     style="position: relative; height: 400px">
+                </div>
+                <div class="card-footer text-muted d-flex justify-content-start align-items-center p-3">
+                    <input type="text" class="form-control form-control-lg" id="typedinput"
+                           placeholder="Type message">
                 </div>
             </div>
-        </section>
-
-
-
-
+        </div>
     </div>
-</section>
-<script
-        type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.3.1/mdb.min.js"
-></script>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script type="text/javascript" src="webjars/bootstrap/5.2.3/js/bootstrap.min.js"></script>
 </body>
 </html>
