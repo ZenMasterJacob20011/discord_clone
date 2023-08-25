@@ -1,17 +1,14 @@
 package com.example.controller;
 
-import com.example.json.PersonIdentifier;
+import com.example.entity.User;
 import com.example.util.DatabaseUtil;
 import com.example.util.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 @Controller
 public class HomePageController {
@@ -27,8 +24,8 @@ public class HomePageController {
 
     @GetMapping("/signup")
     public String signUpPage(Model model) {
-        PersonIdentifier pi = new PersonIdentifier();
-        model.addAttribute("personIdentifier", pi);
+        User user = new User();
+        model.addAttribute("user", user);
         return "signuppage";
     }
 
@@ -39,7 +36,6 @@ public class HomePageController {
 
     @GetMapping("/chat")
     public String goToChat(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationToken){
-        System.out.println(authorizationToken);
         if(jwtService.isValidJWT(authorizationToken)) {
             return "chat";
         }

@@ -1,18 +1,18 @@
 package com.example.util;
 
-import com.example.json.JWTJSON;
-import com.example.json.MessageJSON;
-import com.example.json.PersonIdentifier;
-import com.example.repositories.JWTRepository;
-import com.example.repositories.MessageRepository;
-import com.example.repositories.UserRepository;
+import com.example.entity.Message;
+import com.example.entity.User;
+import com.example.entity.Server;
+import com.example.repository.MessageRepository;
+import com.example.repository.ServerRepository;
+import com.example.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-@Component
+@Service
 public class DatabaseUtil {
 
 
@@ -21,45 +21,88 @@ public class DatabaseUtil {
     @Autowired
     public UserRepository userRepository;
     @Autowired
-    public JWTRepository jwtRepository;
-
-    public boolean isValidUser(String userName, String password){
-        for (PersonIdentifier userRepPI : userRepository.findAll()) {
-            if (userRepPI.getUsername().equals(userName) && userRepPI.getPassword().equals(password)) {
-                return true;
-            }
+    public ServerRepository serverRepository;
+    public boolean isValidUser(String userName, String password) {
+        if (userRepository.existsByUsernameAndPassword(userName, password)) {
+            return true;
         }
         return false;
     }
-    public boolean isValidUser(PersonIdentifier personIdentifier){
-        return isValidUser(personIdentifier.getUsername(), personIdentifier.getPassword());
+
+    public boolean isValidUser(User user) {
+        return isValidUser(user.getUsername(), user.getPassword());
+    }
+    public boolean doesUserExist(String username){
+        return userRepository.existsByUsername(username);
     }
 
-    public void saveUserToRepository(PersonIdentifier personIdentifier){
-        userRepository.save(personIdentifier);
+
+    public void saveUser(User user) {
+        userRepository.save(user);
     }
 
-    public List<MessageJSON> getMessages(){
-        List<MessageJSON> messages = new ArrayList<>();
-        for(MessageJSON message:messageRepository.findAll()){
-            messages.add(message);
-        }
-        return messages;
+    public User getUser(Integer ID){
+        return userRepository.findById(ID).get();
+    }
+    public User getUser(String userName){
+        return userRepository.findPersonIdentifierByUsername(userName);
     }
 
-    public void saveMessage(MessageJSON messageJSON){
-        messageRepository.save(messageJSON);
+    public User getUserByJWT(String JWT){
+        return userRepository.findPersonIdentifierByJWT(JWT);
+    }
+    public void addJWTForPersonIdentifier(User user, String JWT){
+        User oldPI = userRepository.findPersonIdentifierByUsername(user.getUsername());
+        oldPI.setJWT(JWT);
+        userRepository.save(oldPI);
     }
 
-    public void saveJWT(JWTJSON jwtjson){
-        jwtRepository.save(jwtjson);
+    public List<Message> getMessages() {
+        return messageRepository.findAll();
     }
-    public boolean containsJWT(String JWT){
-        for(JWTJSON jwtjson:jwtRepository.findAll()){
-            if(jwtjson.getJWT().equals(JWT)){
-                return true;
-            }
+
+    public void saveMessage(Message message) {
+        messageRepository.save(message);
+    }
+
+    public boolean containsJWT(String JWT) {
+        if (userRepository.existsByJWT(JWT)) {
+            return true;
         }
         return false;
     }
+    public boolean isValidJWT(String JWT){
+        if(containsJWT(JWT)){
+            return true;
+        }
+        return false;
+    }
+
+    public void saveServer(Server server){
+        serverRepository.save(server);
+    }
+    public void deleteServer(Integer serverID){
+        serverRepository.deleteById(serverID);
+    }
+    public void deleteServer(Server server){
+        deleteServer(server.getId());
+    }
+    public Optional<Server> getServer(Integer serverID){
+        return serverRepository.findById(serverID);
+    }
+    public Optional<Server> getServerByInviteCode(String inviteCode){
+        return serverRepository.findServersByInvite_InviteCode(inviteCode);
+    }
+    public void addServerToPersonIdentifier(Integer serverID, String userName){
+        Server server = getServer(serverID).get();
+        User user = getUser(userName);
+        user.addServer(server);
+        userRepository.save(user);
+    }
+    public void addMessageToServer(Message message, Integer serverID){
+        Server curServer = serverRepository.findById(serverID).get();
+        curServer.getMessages().add(message);
+        serverRepository.save(curServer);
+    }
+
 }

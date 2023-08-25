@@ -5,7 +5,7 @@
     <title>Sign Up Page</title>
 </head>
 <body>
-    <form action="#" th:action="@{/save}" th:object="${personIdentifier}" method="POST">
+    <form action="#" th:action="@{/save}" th:object="${user}" method="POST">
         <label for="username">Create Username:</label><br>
         <input type="text" th:field="*{username}" name="username" id="username"><br>
         <label for="password">Create Password:</label><br>

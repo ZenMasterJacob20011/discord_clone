@@ -1,0 +1,12 @@
+body{
+    background-image: url("/images/loginbackground.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    margin: 0;
+    height: 100%;
+}
+
+.circle{
+    border-radius: 50%;
+}

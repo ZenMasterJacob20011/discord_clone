@@ -1,12 +1,9 @@
-package com.example.json;
+package com.example.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
-public class MessageJSON {
+public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -16,10 +13,14 @@ public class MessageJSON {
 
     private String username;
 
-    public MessageJSON() {
+    @ManyToOne
+    private Server server;
+
+    public Message() {
+
     }
 
-    public MessageJSON(String message, String username) {
+    public Message(String message, String username) {
         this.message = message;
         this.username = username;
     }
@@ -46,6 +47,14 @@ public class MessageJSON {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Server getServer() {
+        return server;
+    }
+
+    public void setServer(Server server) {
+        this.server = server;
     }
 
     @Override
