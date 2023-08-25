@@ -2,22 +2,18 @@ package com.example.controller;
 
 
 
-import com.example.json.MessageJSON;
+import com.example.entity.Message;
 
 import com.example.util.DatabaseUtil;
 import com.example.util.JWTService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Controller
 public class ChatController {
@@ -29,18 +25,19 @@ public class ChatController {
 
     @GetMapping("/getmessages")
     @ResponseBody
-    public List<MessageJSON> sendMessages(){
+    public List<Message> sendMessages(){
         return databaseUtil.getMessages();
     }
 
 
-    @PostMapping(value = "/postmessages",consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<?> addMessageToDatabase(@RequestBody MessageJSON input, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) throws InterruptedException {
+    @PostMapping(value = "/postmessages/{serverID}",consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> addMessageToDatabase(@RequestBody Message input, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(value = "serverID") Integer serverID) throws InterruptedException {
         JWTService jwtService = new JWTService();
         if(databaseUtil.containsJWT(authorization)) {
             String username = (String) jwtService.decodeJWT(authorization).get("sub");
             input.setUsername(username);
-            databaseUtil.saveMessage(input);
+            input.setServer(databaseUtil.getServer(serverID).get());
+            databaseUtil.addMessageToServer(input,serverID);
             simpMessagingTemplate.convertAndSend("/topic/chat",input);
             return ResponseEntity.ok(input);
         }
@@ -49,10 +46,9 @@ public class ChatController {
 
 
     @SendTo("/topic/chat")
-    public MessageJSON messageHandler(MessageJSON messageJSON) throws InterruptedException {
-        System.out.println(messageJSON);
+    public Message messageHandler(Message message) throws InterruptedException {
         Thread.sleep(1000);
-        return messageJSON;
+        return message;
     }
 
 
