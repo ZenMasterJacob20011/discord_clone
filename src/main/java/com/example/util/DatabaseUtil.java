@@ -51,18 +51,14 @@ public class DatabaseUtil {
     public User getUserByJWT(String JWT){
         return userRepository.findPersonIdentifierByJWT(JWT);
     }
-    public void addJWTForPersonIdentifier(User user, String JWT){
+    public void addJWTForUser(User user, String JWT){
         User oldPI = userRepository.findPersonIdentifierByUsername(user.getUsername());
         oldPI.setJWT(JWT);
         userRepository.save(oldPI);
     }
 
-    public List<Message> getMessages() {
-        return messageRepository.findAll();
-    }
-
-    public void saveMessage(Message message) {
-        messageRepository.save(message);
+    public List<Message> getMessagesByServerID(int serverID) {
+        return messageRepository.getMessagesByServer_Id(serverID);
     }
 
     public boolean containsJWT(String JWT) {
@@ -93,16 +89,14 @@ public class DatabaseUtil {
     public Optional<Server> getServerByInviteCode(String inviteCode){
         return serverRepository.findServersByInvite_InviteCode(inviteCode);
     }
-    public void addServerToPersonIdentifier(Integer serverID, String userName){
+    public void addServerToUser(Integer serverID, String userName){
         Server server = getServer(serverID).get();
         User user = getUser(userName);
         user.addServer(server);
         userRepository.save(user);
     }
-    public void addMessageToServer(Message message, Integer serverID){
-        Server curServer = serverRepository.findById(serverID).get();
-        curServer.getMessages().add(message);
-        serverRepository.save(curServer);
+    public void addMessage(Message message){
+        messageRepository.save(message);
     }
 
 }

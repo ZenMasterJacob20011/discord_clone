@@ -1,12 +1,18 @@
-body{
+html {
+    margin: 0;
+    height: 100%;
+}
+
+body {
     background-image: url("/images/loginbackground.png");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
     margin: 0;
     height: 100%;
+    color: white;
+    font-family: "gg sans Normal";
 }
-
-.circle{
+.circle {
     border-radius: 50%;
 }

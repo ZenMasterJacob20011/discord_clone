@@ -1,9 +1,12 @@
 package com.example.service;
 
+import com.example.dto.MessageDTO;
 import com.example.dto.ServerDTO;
 import com.example.dto.UserDTO;
+import com.example.entity.Message;
 import com.example.entity.Server;
 import com.example.entity.User;
+import com.example.repository.MessageRepository;
 import com.example.repository.ServerRepository;
 import com.example.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,9 @@ public class MapService {
     @Autowired
     private ServerRepository serverRepository;
 
+    @Autowired
+    private MessageRepository messageRepository;
+
     public List<UserDTO> getAllPersonIdentifierInfo(){
         return ((List<User>) userRepository
                 .findAll())
@@ -34,6 +40,10 @@ public class MapService {
     }
     public ServerDTO getServerByID(Integer id){
         return convertServerToDTO(serverRepository.findById(id).get());
+    }
+
+    public List<MessageDTO> getMessageByServerID(Integer serverID){
+        return messageRepository.getMessagesByServer_Id(serverID).stream().map(this::convertMessageToDTO).collect(Collectors.toList());
     }
 
     private UserDTO convertPersonIdentifierToDTO(User user){
@@ -53,5 +63,14 @@ public class MapService {
         serverDTO.setUsers(server.getUsers());
         serverDTO.setMessage(server.getMessages());
         return serverDTO;
+    }
+
+    public MessageDTO convertMessageToDTO(Message message){
+        MessageDTO messageDTO = new MessageDTO();
+        messageDTO.setMessage(message.getMessage());
+        messageDTO.setServerID(message.getServer().getId());
+        messageDTO.setUsername(message.getUsername());
+        messageDTO.setId(message.getId());
+        return messageDTO;
     }
 }
