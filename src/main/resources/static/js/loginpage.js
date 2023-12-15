@@ -1,21 +1,21 @@
-async function verifyUserHandler(userNameId, passwordId) {
-    const username = document.querySelector(userNameId);
-    const password = document.querySelector(passwordId);
-    const response = await fetch("http://localhost:8080/verify", {
+async function verifyUser() {
+    const username = document.getElementById("username");
+    const password = document.getElementById("password");
+    let formdata = new FormData();
+    formdata.append("username",username.value);
+    formdata.append("password",password.value);
+    const response = await fetch("http://localhost:8080/login", {
         method: "POST",
         headers: {
             'Accept': "*/*",
-            'Content-Type': "application/json"
         },
-        body: JSON.stringify({
-            'username': username.value,
-            'password': password.value
-        })
+        body: formdata
     });
-    const responseJSON = await response.json();
+    const token = await response.text();
     if (response.ok) {
-        localStorage.setItem("token", responseJSON.token);
-        window.location.href = "http://localhost:8080/login";
+        localStorage.setItem("token", token);
+        navigateToUserPage();
+        // window.location.href = "http://localhost:8080/login";
     } else {
         //add login or password is invalid text to username part also change the text to red
         //add login or password is invalid to password part
@@ -30,16 +30,6 @@ async function verifyUserHandler(userNameId, passwordId) {
     password.value = '';
 }
 
-async function validatejwt(token) {
-    let response = await fetch("http://localhost:8080/chat", {
-        method: "GET",
-        headers: {
-            'Authorization': token,
-        },
-    });
-    if (!response.redirected) {
-        document.write(await response.text());
-        document.close();
-    }
+function navigateToUserPage() {
+    window.location.href = "http://localhost:8080/server/@me"
 }
-

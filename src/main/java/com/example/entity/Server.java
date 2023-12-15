@@ -1,11 +1,7 @@
 package com.example.entity;
 
-import com.example.dto.InviteDTO;
-import com.example.dto.ServerDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-
-import java.util.UUID;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +38,7 @@ public class Server {
         this.serverName = serverName;
     }
 
+    @JsonIgnore
     public List<Message> getMessages() {
         return messages;
     }

@@ -1,6 +1,10 @@
 package com.example.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 public class Message {
@@ -16,6 +20,9 @@ public class Message {
     @ManyToOne
     private Server server;
 
+    @JsonFormat(pattern = "yyyy-mm-dd HH:mm:ss")
+    private LocalDateTime postTime;
+
     public Message() {
 
     }
@@ -23,6 +30,14 @@ public class Message {
     public Message(String message, String username) {
         this.message = message;
         this.username = username;
+    }
+
+    public LocalDateTime getPostTime() {
+        return postTime;
+    }
+
+    public void setPostTime(LocalDateTime postTime) {
+        this.postTime = postTime;
     }
 
     public String getMessage() {
@@ -57,12 +72,15 @@ public class Message {
         this.server = server;
     }
 
+
     @Override
     public String toString() {
-        return "MessageJSON{" +
+        return "Message{" +
                 "id=" + id +
                 ", message='" + message + '\'' +
                 ", username='" + username + '\'' +
+                ", server=" + server +
+                ", postTime=" + postTime +
                 '}';
     }
 }

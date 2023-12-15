@@ -22,23 +22,7 @@ public class HomePageController {
         return "index";
     }
 
-    @GetMapping("/signup")
-    public String signUpPage(Model model) {
-        User user = new User();
-        model.addAttribute("user", user);
-        return "signuppage";
-    }
 
-    @GetMapping("/login")
-    public String logInPage() {
-        return "loginpage";
-    }
 
-    @GetMapping("/chat")
-    public String goToChat(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationToken){
-        if(jwtService.isValidJWT(authorizationToken)) {
-            return "chat";
-        }
-        return "redirect:/login";
-    }
+
 }
