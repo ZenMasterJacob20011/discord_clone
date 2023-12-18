@@ -1,5 +1,5 @@
 import {
-    decodedJWTJSON, getServerInformationByID,
+    getServerInformationByID,
     handleCopyInviteLinkButton,
     loadNameTag, Message, MessageWithProfilePicture
 } from "./util.js"
@@ -80,14 +80,9 @@ export function addMessage(jsonData) {
     }
 }
 
-// document.getElementById("members-button").onclick = function (){
-//     let serverMembersBar = document.getElementById("server-members");
-//     if(serverMembersBar.style.display === "none"){
-//         serverMembersBar.style.display = "";
-//     }else{
-//         serverMembersBar.style.display = "none";
-//     }
-// }
+
+
+
 
 function MessageBar() {
     return `
@@ -95,13 +90,21 @@ function MessageBar() {
     `
 }
 
-function ServerOptionsMenu(server_id) {
-    console.log(getServerInformationByID(server_id))
-    const serverName = getServerInformationByID(server_id).serverName
+function UserForServerMemberSidebar(username) {
+    return `
+        <div style="height: 44px" class="d-flex justify-content-start align-items-center">
+            <div class="profile-image"></div>
+            <div class="ps-2">${username}</div>
+        </div>
+    `
+}
+
+
+function ServerOptionsMenu(serverInfo) {
     return `
         <div class="dropdown" style="width: 100%">
             <button id="serverNameButton" class="btn w-100 dropdown-toggle p-0" type="button" data-bs-toggle="dropdown" style="height: 48px">
-                ${getServerInformationByID(server_id).serverName}
+                ${serverInfo.serverName}
             </button>
             <ul class="dropdown-menu">
                 <li class="dropdown-item">1</li>
@@ -122,7 +125,7 @@ function ServerTopBar() {
                 <h5 class="mb-0 p-2" id="group-name">Chat</h5>
             </div>
             <div class="flex-container" style="gap: 1rem">
-                <button class="members-button">
+                <button id="members-button">
                     <svg x="0" y="0" class="icon" aria-hidden="true" role="img" width="24" height="24" viewBox="0 0 24 24">
                         <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M14 8.00598C14 10.211 12.206 12.006 10 12.006C7.795 12.006 6 10.211 6 8.00598C6 5.80098 7.794 4.00598 10 4.00598C12.206 4.00598 14 5.80098 14 8.00598ZM2 19.006C2 15.473 5.29 13.006 10 13.006C14.711 13.006 18 15.473 18 19.006V20.006H2V19.006Z"></path>
                         <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M14 8.00598C14 10.211 12.206 12.006 10 12.006C7.795 12.006 6 10.211 6 8.00598C6 5.80098 7.794 4.00598 10 4.00598C12.206 4.00598 14 5.80098 14 8.00598ZM2 19.006C2 15.473 5.29 13.006 10 13.006C14.711 13.006 18 15.473 18 19.006V20.006H2V19.006Z"></path>
@@ -142,12 +145,31 @@ function ServerTopBar() {
 }
 
 
-export function loadServerPage(server_id) {
+function loadServerMembers(serverInfo) {
+    const serverMembers = serverInfo.users;
+    console.log(serverMembers)
+    const membersGroup = document.getElementById("members-group")
+    for (const serverMember of serverMembers) {
+        membersGroup.innerHTML += UserForServerMemberSidebar(serverMember.username);
+    }
+}
+
+export async function loadServerPage(server_id) {
+    const serverInfo = await getServerInformationByID(server_id)
     document.getElementById("content-sidebar-mid").innerHTML = ``;
-    document.getElementById("content-sidebar-top").innerHTML = ServerOptionsMenu(server_id);
+    document.getElementById("content-sidebar-top").innerHTML = ServerOptionsMenu(serverInfo);
     document.getElementById("main-content-top").innerHTML = ServerTopBar();
     loadMessages(server_id)
     document.getElementById("main-content-bot").innerHTML = MessageBar();
+    loadServerMembers(serverInfo);
+    document.getElementById("members-button").onclick = function () {
+        let serverMembersBar = document.getElementById("server-members");
+        if (serverMembersBar.style.display === "none") {
+            serverMembersBar.style.display = "";
+        } else {
+            serverMembersBar.style.display = "none";
+        }
+    }
     document.getElementById("typedinput").addEventListener("keydown", e => {
         if (e.key === 'Enter') {
             if (document.querySelector("#typedinput").value !== "" && document.activeElement === document.getElementById("typedinput")) {
