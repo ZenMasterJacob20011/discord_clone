@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 
@@ -46,6 +47,13 @@ public class MapService {
         return messageRepository.getMessagesByServer_Id(serverID).stream().map(this::convertMessageToDTO).collect(Collectors.toList());
     }
 
+    public MessageDTO getMessageByMessageID(Integer messageID){
+        if(messageRepository.findById(messageID).isPresent()) {
+            return convertMessageToDTO(messageRepository.findById(messageID).get());
+        }
+        throw new NoSuchElementException("Could not find Message with ID " + messageID + " in database");
+    }
+
     private UserDTO convertPersonIdentifierToDTO(User user){
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());
@@ -65,12 +73,13 @@ public class MapService {
         return serverDTO;
     }
 
-    public MessageDTO convertMessageToDTO(Message message){
+    private MessageDTO convertMessageToDTO(Message message){
         MessageDTO messageDTO = new MessageDTO();
         messageDTO.setMessage(message.getMessage());
         messageDTO.setServerID(message.getServer().getId());
         messageDTO.setUsername(message.getUsername());
         messageDTO.setId(message.getId());
+        messageDTO.setPostTime(message.getPostTime());
         return messageDTO;
     }
 }
