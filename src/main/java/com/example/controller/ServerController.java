@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.dto.MessageDTO;
+import com.example.dto.ServerDTO;
 import com.example.entity.Message;
 import com.example.entity.User;
 import com.example.entity.Server;
@@ -65,6 +66,11 @@ public class ServerController {
         return mapService.getMessageByServerID(serverID);
     }
 
+    @GetMapping("/{serverID}/getServerInfo")
+    @ResponseBody
+    public ServerDTO getServerInfoByID(@PathVariable(value = "serverID") Integer serverID){
+        return mapService.getServerByID(serverID);
+    }
 
     @PostMapping(value = "/{serverID}/postmessages",consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> addMessageToDatabase(@RequestBody Message input, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(value = "serverID") Integer serverID) throws InterruptedException {
