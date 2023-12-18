@@ -21,24 +21,65 @@ export function Circle(width, height) {
     `
 }
 
-export function Message(start, message, username) {
+/**
+ * converts a standard datetime to a more human-readable datetime
+ * @param dateTime {string} the datetime in the form YYYY-MM-DDTHH:MM:SS.SSS e.g. 2023-12-15T19:46:41.0922186
+ * @returns {string} human readable datetime e.g. Today at 7:46 PM
+ */
+export function convertDateTimeToString(dateTime) {
+    const dateTimeObject = new Date(dateTime);
+    const today = new Date();
+    const yesterday = today.getDay()-1 <= -1 ? 6 : today.getDay()-1;
+    const localTime = dateTimeObject.toLocaleTimeString().substring(0,dateTimeObject.toLocaleTimeString().lastIndexOf(":")) + dateTimeObject.toLocaleTimeString().substring(dateTimeObject.toLocaleTimeString().lastIndexOf(" "));
+    let localDate = dateTimeObject.toLocaleDateString();
+    if(dateTimeObject.getDay() === today.getDay()){
+        localDate = "Today";
+    }else if(dateTimeObject.getDay() === yesterday){
+        localDate = "Yesterday";
+    }
+    return `${localDate} at ${localTime}`
+}
+
+/**
+ * contains html for displaying messages with profile picture
+ * @param message {string} the message
+ * @param username {string} user who sent the message
+ * @param timestamp {string} the time the message was sent
+ * @returns {string} the html
+ */
+export function MessageWithProfilePicture(message, username, timestamp) {
     return `
-        <div style="height: 40px" class="mt-4 d-flex align-items-center flex-row mb-4 ${(start) ? "justify-content-start" : "justify-content-end"}">
-            ${Circle("40px", "40px")}
-            <div class="d-flex container-fluid flex-column">
-                <div>
-                    <span style="font-size: 16px; font-weight: 500" class="text-white">
-                        ${username}
-                    </span>
-                </div>
-                <div>
-                    <span style="font-size: 16px; font-weight: 400" class="small">
-                        ${message}
-                    </span>
-                </div>
+        <div style="height: 48px; margin-top: 17px" data-timestamp="${timestamp}" data-username="${username}">
+            <span style="position: absolute">${Circle("40px", "40px")}</span>
+            <div style="padding-left: 50px">
+                <span style="font-size: 16px; font-weight: 500" class="text-white">
+                    ${username}
+                </span>
+                <span>
+                    <time style="font-size: 12px; color: rgb(148, 155, 164); margin-left: 4px" datetime="${timestamp}">${convertDateTimeToString(timestamp)}</time>
+                </span>
             </div>
+            ${Message(message,username,timestamp)}
         </div>
     
+    `
+}
+
+/**
+ * contains the html to display a message without displaying the profile picture and username
+ * @param message {string} the message to be displayed
+ * @param username {string} the username stored in data-username attribute
+ * @param timestamp {string} the timestamp stored in data-timestamp attribute
+ * @returns {string} the html
+ * @constructor
+ */
+export function Message(message, username, timestamp) {
+    return `
+        <div style="padding-left: 50px" data-timestamp="${timestamp}" data-username="${username}">
+            <span style="font-size: 16px; font-weight: 400" class="small">
+                ${message}
+            </span>
+        </div>
     `
 }
 
@@ -50,12 +91,16 @@ export async function loadUsersInfo() {
             "Authorization": jwt
         }
     })
-
     user = await response.json();
 }
 await loadUsersInfo();
 export function loadNameTag() {
     document.getElementById("name").innerText = decodedJWTJSON.sub;
+}
+
+Date.prototype.addMinutes = function(m) {
+    this.setTime(this.getTime() + (m*60*1000));
+    return this;
 }
 
 export function addErrorMessageToHTML(cssSelector, errorMessage) {
