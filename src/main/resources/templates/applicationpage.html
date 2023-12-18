@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -204,10 +204,10 @@
                         </div>
                     </div>
                     <div id="server-members" style="display: none" class="col">
-                        <div class="container py-3" th:each="user: ${userlist}">
+                        <div id="members-group" class="container py-3">
                             <div class="d-flex justify-content-start align-items-center">
                                 <div class="profile-image"></div>
-                                <div class="ps-2" th:text="${user.getUsername()}"></div>
+                                <div class="ps-2">what</div>
                             </div>
                         </div>
                     </div>
