@@ -17,6 +17,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -58,22 +59,24 @@ public class ServerController {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-    @GetMapping("/messages/{serverID}")
+    @GetMapping("/{serverID}/messages")
     @ResponseBody
     public List<MessageDTO> getMessages(@PathVariable(value = "serverID") Integer serverID){
         return mapService.getMessageByServerID(serverID);
     }
 
 
-    @PostMapping(value = "/postmessages/{serverID}",consumes = {MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(value = "/{serverID}/postmessages",consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> addMessageToDatabase(@RequestBody Message input, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(value = "serverID") Integer serverID) throws InterruptedException {
         JWTService jwtService = new JWTService();
         if(databaseUtil.containsJWT(authorization)) {
             String username = (String) jwtService.decodeJWT(authorization).get("sub");
             input.setUsername(username);
+            input.setPostTime(LocalDateTime.now());
             input.setServer(databaseUtil.getServer(serverID).get());
-            MessageDTO messageDTO = mapService.convertMessageToDTO(input);
             databaseUtil.addMessage(input);
+            System.out.println(input.getId());
+            MessageDTO messageDTO = mapService.getMessageByMessageID(input.getId());
             simpMessagingTemplate.convertAndSend("/topic/chat",messageDTO);
             return ResponseEntity.ok(messageDTO);
         }
