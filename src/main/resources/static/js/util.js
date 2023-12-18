@@ -148,15 +148,17 @@ async function getInviteLink(serverID) {
 }
 
 /**
- * returns server information given a server_id. This checks the serverList property inside user
- * @param server_id the id of the server e.g. 1
- * @returns {undefined|Object}
+ * returns server information given a server_id
+ * @param server_id {Number} the id of the server e.g. 1
+ * @returns {Object}
  */
-export function getServerInformationByID(server_id) {
-    for (const server of user.serverList) {
-        if (server.id == server_id) {
-            return server
-        }
+export async function getServerInformationByID(server_id) {
+    const response = await fetch(`http://localhost:8080/server/${server_id}/getServerInfo`, {
+        method: "GET"
+    });
+    if (response.ok) {
+        return response.json();
+    } else {
+        throw Error(await response.text());
     }
-    return undefined
 }
