@@ -48,7 +48,12 @@ public class ServerController {
         }
         Map<String,Object> JWT = jwtService.decodeJWT(authorization);
         User user = databaseUtil.getUser((String)JWT.get("sub"));
-        databaseUtil.addServerToUser(serverID, user.getUsername());
+        try {
+            databaseUtil.addServerToUser(serverID, user.getUsername());
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.FOUND).body(e.getMessage());
+        }
         return ResponseEntity.ok(user);
     }
     @PostMapping("/deleteserver")
