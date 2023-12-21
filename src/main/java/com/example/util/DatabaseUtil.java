@@ -89,9 +89,12 @@ public class DatabaseUtil {
     public Optional<Server> getServerByInviteCode(String inviteCode){
         return serverRepository.findServersByInvite_InviteCode(inviteCode);
     }
-    public void addServerToUser(Integer serverID, String userName){
+    public void addServerToUser(Integer serverID, String userName) throws Exception {
         Server server = getServer(serverID).get();
         User user = getUser(userName);
+        if (user.getServerList().contains(server)){
+            throw new Exception(userName + " is already a member of " + server.getServerName());
+        }
         user.addServer(server);
         userRepository.save(user);
     }
