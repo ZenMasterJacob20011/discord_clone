@@ -51,7 +51,7 @@ function handleContextMenu() {
         });
         return false;
     });
-    $contextMenu.on("click", "#invite-people", function (e) {
+    $contextMenu.on("click", "#invite-people", function () {
         getInviteLink(curServerID).then(responseJSON => {
             $contextMenu.hide();
             $("#insertservername").text(`Invite friends to ${serverInfo.serverName} server`);

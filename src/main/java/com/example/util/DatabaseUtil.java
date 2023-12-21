@@ -62,10 +62,7 @@ public class DatabaseUtil {
         return userRepository.existsByJWT(JWT);
     }
     public boolean isValidJWT(String JWT){
-        if(containsJWT(JWT)){
-            return true;
-        }
-        return false;
+        return containsJWT(JWT);
     }
 
     public void saveServer(Server server){

@@ -29,14 +29,6 @@ public class MapService {
     @Autowired
     private MessageRepository messageRepository;
 
-    public List<UserDTO> getAllPersonIdentifierInfo() {
-        return ((List<User>) userRepository
-                .findAll())
-                .stream()
-                .map(this::convertPersonIdentifierToDTO)
-                .collect(Collectors.toList());
-    }
-
     public UserDTO getUserByJwt(String JWT) throws Exception {
         if (userRepository.findPersonIdentifierByJWT(JWT).isPresent()) {
             return convertPersonIdentifierToDTO(userRepository.findPersonIdentifierByJWT(JWT).get());
