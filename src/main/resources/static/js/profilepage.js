@@ -1,14 +1,14 @@
-import {jwt, user} from "./util.js";
+import {Circle, jwt, SearchBar, user} from "./util.js";
 
 /**
  * Contains HTML for the top of the profile sidebar
  * @returns {string} The HTML for top profile sidebar
  * @constructor
  */
-function TopProfileSideBar(){
+function TopProfileSideBar() {
     return `
         <div class="search-bar-2 rounded px-1 mx-2">
-            <input class="search" placeholder="Find or start a conversation">
+            <input name="find-or-start-a-conversion" class="search" placeholder="Find or start a conversation">
         </div>
     `
 }
@@ -18,7 +18,7 @@ function TopProfileSideBar(){
  * @returns {string} the HTML
  * @constructor
  */
-function MidProfileSideBar(){
+function MidProfileSideBar() {
     return `
         <div class="container">
             <div>
@@ -107,11 +107,10 @@ function MainContentTopProfile() {
 }
 
 
-
-
 function loadProfileMainContent() {
     loadProfileMainContentTop();
     document.getElementById("main-content-mid").innerHTML = "";
+    document.getElementById("server-members").style.display = "none";
     document.getElementById("main-content-bot").innerHTML = "";
 }
 
@@ -129,33 +128,7 @@ function loadProfileSideBar() {
 }
 
 
-/**
- * contains the html to create a bar than contains a profile picture, username and two buttons on the end
- * @param name the username
- * @returns {string} the html
- * @constructor
- */
-function FriendBar(name) {
-    return `
-                <div class="container d-flex justify-content-between align-items-center">
-                    <div class="container d-flex align-items-center">
-                        <div class="profile-image"></div>
-                        <div class="container">
-                            <div>${name}</div>
-                            <div>offline/online</div>
-                        </div>
-                    </div>
-                    <div class="container d-flex justify-content-end">
-                        <button class="accept-friend-request">
-                            <svg class="icon" aria-hidden="true" role="img" width="24" height="24" viewBox="0 0 24 24" fill="none"><path fill="currentColor" d="M4.79805 3C3.80445 3 2.99805 3.8055 2.99805 4.8V15.6C2.99805 16.5936 3.80445 17.4 4.79805 17.4H7.49805V21L11.098 17.4H19.198C20.1925 17.4 20.998 16.5936 20.998 15.6V4.8C20.998 3.8055 20.1925 3 19.198 3H4.79805Z"></path></svg>
-                        </button>
-                        <button class="decline-friend-request">
-                                <svg class="icon" aria-hidden="true" role="img" width="24" height="24" viewBox="0 0 24 24"><g fill="none" fill-rule="evenodd"><path d="M24 0v24H0V0z"></path><path fill="currentColor" d="M12 16c1.1045695 0 2 .8954305 2 2s-.8954305 2-2 2-2-.8954305-2-2 .8954305-2 2-2zm0-6c1.1045695 0 2 .8954305 2 2s-.8954305 2-2 2-2-.8954305-2-2 .8954305-2 2-2zm0-6c1.1045695 0 2 .8954305 2 2s-.8954305 2-2 2-2-.8954305-2-2 .8954305-2 2-2z"></path></g></svg>
-                        </button>
-                    </div>
-                </div>
-                `;
-}
+
 
 /**
  * loads all the buttons (including buttons functionality) when you click on the friends sidebar when your in the profile page
@@ -170,9 +143,9 @@ function loadProfileMainContentTop() {
      */
     function ProfileMainContentAddFriend() {
         return `
-        <div class="container">
-            <div>ADD FRIEND</div>
-            <div class="py-2" style="color: rgb(181, 186, 193)">You can add friends with their Discord username</div>
+        <div class="container-fluid mt-3">
+            <div class="fw-bold">ADD FRIEND</div>
+            <div class="py-2" style="color: rgb(181, 186, 193); font-size: 14px">You can add friends with their Discord username</div>
             <div class="search-bar-2 rounded px-1 justify-content-between">
                 <input id="sendFriendRequestUsername" class="search w-75" placeholder="You can add friends with their Discord username.">
                 <button class="btn btn-primary btn-sm m-2" id="sendFriendRequest">Send Friend Request</button>
@@ -204,6 +177,7 @@ function loadProfileMainContentTop() {
         }
     }
 
+
     /**
      * contains html for pending friend requests
      * @param username the username of the friend request
@@ -212,15 +186,15 @@ function loadProfileMainContentTop() {
      */
     function ProfileMainContentPendingFriend(username) {
         return `
-        <div class="container d-flex justify-content-between align-items-center">
-            <div class="container d-flex align-items-center">
-                <div class="profile-image"></div>
-                <div class="container">
+        <div class="row align-items-center justify-content-between">
+            <div class="col d-flex align-items-center">
+                ${Circle("40px", "40px")}
+                <div class="ps-5">
                     <div>${username}</div>
                     <div>Incoming friend request</div>
                 </div>
             </div>
-            <div class="container d-flex justify-content-end">
+            <div class="col d-flex justify-content-end">
                 <button class="accept-friend-request">
                     <img width="32" alt="Eo circle green checkmark" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Eo_circle_green_checkmark.svg/32px-Eo_circle_green_checkmark.svg.png">
                 </button>
@@ -228,20 +202,38 @@ function loadProfileMainContentTop() {
                         <img width="32" alt="Cross red circle" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Cross_red_circle.svg/32px-Cross_red_circle.svg.png">
                 </button>
             </div>
+            <div class="divider mt-2 mb-2"></div>
         </div>
-            
     `;
     }
 
+    /**
+     * The html for the container containing the pending friend requests
+     * @param friendRequestsLength {number} the number of friends
+     * @returns {string} the html
+     * @constructor
+     */
+    function PendingFriendsContainer(friendRequestsLength) {
+        return `
+            <div id="pendingfriendscontainer" class="container-fluid mt-3">
+                <div class="row">
+                    <div>PENDING - ${friendRequestsLength}</div>
+                    <div class="divider mt-2 mb-2"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Adds all the pending friends html and accept friend / decline friend button functions
+     * @returns {Promise<void>}
+     */
     document.getElementById("pending-friend").onclick = async function () {
         let userJSON = await user;
         let friendRequests = userJSON.pendingFriends;
-        let pendingFriendRequestBody = document.getElementById("main-content-mid");
-        pendingFriendRequestBody.innerHTML = `
-            <div>PENDING - ${friendRequests.length}</div>
-            `
-        for (const request of friendRequests) {
-            pendingFriendRequestBody.innerHTML += ProfileMainContentPendingFriend(request.username);
+        document.getElementById("main-content-mid").innerHTML = PendingFriendsContainer(friendRequests.length);
+        for (const friendRequest of friendRequests) {
+            document.getElementById("pendingfriendscontainer").innerHTML += ProfileMainContentPendingFriend(friendRequest.username);
             let acceptFriendRequestButton = document.getElementsByClassName("accept-friend-request").item(document.getElementsByClassName("accept-friend-request").length - 1);
             acceptFriendRequestButton.onclick = async function () {
                 let response = await fetch("http://localhost:8080/user/acceptFriendRequest", {
@@ -249,18 +241,8 @@ function loadProfileMainContentTop() {
                     headers: {
                         "Authorization": jwt
                     },
-                    body: request.username
+                    body: friendRequest.username
                 });
-                let friendRequestContainer = acceptFriendRequestButton.parentNode.parentNode;
-                if (response.ok) {
-                    friendRequestContainer.innerHTML = `
-                            <div class="text-success">${await response.text()}</div>
-                        `;
-                    return;
-                }
-                friendRequestContainer.innerHTML = `
-                            <div class="text-danger">${await response.text()}</div>
-                        `;
             }
             let declineFriendRequestButton = document.getElementsByClassName("decline-friend-request").item(document.getElementsByClassName("decline-friend-request").length - 1)
             declineFriendRequestButton.onclick = async function () {
@@ -269,48 +251,70 @@ function loadProfileMainContentTop() {
                     headers: {
                         "Authorization": jwt
                     },
-                    body: request.username
+                    body: friendRequest.username
                 });
-                let friendRequestContainer = declineFriendRequestButton.parentNode.parentNode;
-                if (response.ok) {
-                    friendRequestContainer.innerHTML = `
-                            <div class="text-success">${await response.text()}</div>
-                        `;
-                    return;
-                }
-                friendRequestContainer.innerHTML = `
-                            <div class="text-danger">${await response.text()}</div>
-                        `;
             }
-
         }
     }
 
     /**
-     * contains the html for when you click on the all friends button
-     * @param acceptedFriends is json of accepted friends e.g. [{id:2,username: 'Bob',password: '123', pendingFriends: Array(0), jwt: '3mgfrui4'}, {...}, {...}]
+     * contains the html to create a bar than contains a profile picture, username and two buttons on the end
+     * @param username the username
      * @returns {string} the html
      * @constructor
      */
-    function ProfileMainContentAllFriend(acceptedFriends) {
-        let theHTML = `
-                        <div class="search-bar">
-                            <input class="search" type="text" placeholder="Search">
-                            <svg class="icon" aria-hidden="true" role="img" width="24" height="24" viewBox="0 0 24 24">
-                                <path fill="currentColor" d="M21.707 20.293L16.314 14.9C17.403 13.504 18 11.799 18 10C18 7.863 17.167 5.854 15.656 4.344C14.146 2.832 12.137 2 10 2C7.863 2 5.854 2.832 4.344 4.344C2.833 5.854 2 7.863 2 10C2 12.137 2.833 14.146 4.344 15.656C5.854 17.168 7.863 18 10 18C11.799 18 13.504 17.404 14.9 16.314L20.293 21.706L21.707 20.293ZM10 16C8.397 16 6.891 15.376 5.758 14.243C4.624 13.11 4 11.603 4 10C4 8.398 4.624 6.891 5.758 5.758C6.891 4.624 8.397 4 10 4C11.603 4 13.109 4.624 14.242 5.758C15.376 6.891 16 8.398 16 10C16 11.603 15.376 13.11 14.242 14.243C13.109 15.376 11.603 16 10 16Z"></path>
-                            </svg>
-                            </div>
-                        <div>ALL FRIENDS - ${acceptedFriends.length}</div>
-                        `;
-        for (const acceptedFriend of acceptedFriends) {
-            theHTML += FriendBar(acceptedFriend.username);
-        }
-        return theHTML;
+    function ProfileMainContentAllFriend(username) {
+        return `
+            <div class="row align-items-center justify-content-between">
+                <div class="col d-flex align-items-center">
+                    ${Circle("40px", "40px")}
+                    <div class="ps-5">
+                        <div>${username}</div>
+                        <div>Offline/Online</div>
+                    </div>
+                </div>
+                <div class="col d-flex justify-content-end">
+                    <button class="message-button">
+                        <svg class="icon" aria-hidden="true" role="img" width="24" height="24" viewBox="0 0 24 24" fill="none"><path fill="currentColor" d="M4.79805 3C3.80445 3 2.99805 3.8055 2.99805 4.8V15.6C2.99805 16.5936 3.80445 17.4 4.79805 17.4H7.49805V21L11.098 17.4H19.198C20.1925 17.4 20.998 16.5936 20.998 15.6V4.8C20.998 3.8055 20.1925 3 19.198 3H4.79805Z"></path></svg>
+                    </button>
+                    <button class="more-button">
+                        <svg class="icon" aria-hidden="true" role="img" width="24" height="24" viewBox="0 0 24 24"><g fill="none" fill-rule="evenodd"><path d="M24 0v24H0V0z"></path><path fill="currentColor" d="M12 16c1.1045695 0 2 .8954305 2 2s-.8954305 2-2 2-2-.8954305-2-2 .8954305-2 2-2zm0-6c1.1045695 0 2 .8954305 2 2s-.8954305 2-2 2-2-.8954305-2-2 .8954305-2 2-2zm0-6c1.1045695 0 2 .8954305 2 2s-.8954305 2-2 2-2-.8954305-2-2 .8954305-2 2-2z"></path></g></svg>
+                    </button>
+                </div>
+                <div class="divider mt-2 mb-2"></div>
+            </div>
+                `;
+    }
+
+    function AllFriendsContainer(friendsLength) {
+        return `
+            <div class="pt-3">
+                ${SearchBar()}
+            </div>
+            <div id="allfriendscontainer" class="container-fluid mt-3">
+                <div class="row">
+                    <div class="py-2 fw-bold" style="color: rgb(181, 186, 193); font-size: 14px">ALL FRIENDS - ${friendsLength}</div>
+                    <div class="divider mt-2 mb-2"></div>
+                </div>
+            </div>
+        `;
     }
 
     document.getElementById("view-all-friends").onclick = function () {
         let mainContentPage = document.getElementById("main-content-mid");
-        mainContentPage.innerHTML = ProfileMainContentAllFriend(user.acceptedFriends)
+        const acceptedFriends = user.acceptedFriends;
+        mainContentPage.innerHTML = ProfileMainContentAllFriend(acceptedFriends);
+        mainContentPage.innerHTML = AllFriendsContainer(acceptedFriends.length);
+        const allFriendsContainer = document.getElementById("allfriendscontainer");
+        for (const acceptedFriend of acceptedFriends) {
+            allFriendsContainer.innerHTML += ProfileMainContentAllFriend(acceptedFriend.username);
+            allFriendsContainer.getElementsByClassName("message-button").item(allFriendsContainer.getElementsByClassName("message-button").length-1).onclick = function () {
+                //TODO implement this function
+            }
+            allFriendsContainer.getElementsByClassName("more-button").item(allFriendsContainer.getElementsByClassName("more-button").length-1).onclick = function () {
+                //TODO implement this function
+            }
+        }
     }
 
 
