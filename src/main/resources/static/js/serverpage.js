@@ -3,12 +3,11 @@ import {
     handleCopyInviteLinkButton,
     loadNameTag, Message, MessageWithProfilePicture
 } from "./util.js"
-import {handleContextMenu, loadSideServers} from "./serversidebar.js";
+import {loadSideServers} from "./serversidebar.js";
 
 
 loadNameTag();
 loadSideServers();
-handleContextMenu();
 handleCopyInviteLinkButton()
 
 
@@ -149,6 +148,7 @@ function loadServerMembers(serverInfo) {
     const serverMembers = serverInfo.users;
     console.log(serverMembers)
     const membersGroup = document.getElementById("members-group")
+    membersGroup.innerHTML = ``;
     for (const serverMember of serverMembers) {
         membersGroup.innerHTML += UserForServerMemberSidebar(serverMember.username);
     }
@@ -157,6 +157,7 @@ function loadServerMembers(serverInfo) {
 export async function loadServerPage(server_id) {
     const serverInfo = await getServerInformationByID(server_id)
     document.getElementById("content-sidebar-mid").innerHTML = ``;
+    document.getElementById("main-content-mid").innerHTML = ``;
     document.getElementById("content-sidebar-top").innerHTML = ServerOptionsMenu(serverInfo);
     document.getElementById("main-content-top").innerHTML = ServerTopBar();
     loadMessages(server_id)
@@ -177,22 +178,4 @@ export async function loadServerPage(server_id) {
             }
         }
     })
-}
-
-function ServerCircle(serverID, serverName) {
-    return `
-        <li class="squircle">
-            <button id="${serverID}" data-link>${serverName.substring(0, 2)}</button>
-        </li>
-    `
-}
-
-export function createServerCircle(serverID, serverName) {
-    let squircle = ServerCircle(serverID, serverName);
-    insertServerCircleIntoSideBar(squircle);
-}
-
-
-function insertServerCircleIntoSideBar(squircle) {
-    document.getElementById("user-server-divider").insertAdjacentHTML("afterend", squircle);
 }
