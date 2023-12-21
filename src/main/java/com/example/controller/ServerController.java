@@ -3,8 +3,8 @@ package com.example.controller;
 import com.example.dto.MessageDTO;
 import com.example.dto.ServerDTO;
 import com.example.entity.Message;
-import com.example.entity.User;
 import com.example.entity.Server;
+import com.example.entity.User;
 import com.example.service.MapService;
 import com.example.util.DatabaseUtil;
 import com.example.util.JWTService;
@@ -13,7 +13,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -73,7 +72,7 @@ public class ServerController {
 
     @GetMapping("/{serverID}/getServerInfo")
     @ResponseBody
-    public ServerDTO getServerInfoByID(@PathVariable(value = "serverID") Integer serverID){
+    public ServerDTO getServerInfoByID(@PathVariable(value = "serverID") Integer serverID) throws Exception {
         return mapService.getServerByID(serverID);
     }
 
@@ -97,13 +96,6 @@ public class ServerController {
         }
         return new ResponseEntity<>("Invalid auth token", HttpStatus.FORBIDDEN);
     }
-
-
-//    @SendTo("/topic/chat")
-//    public Message messageHandler(Message message) throws InterruptedException {
-//        Thread.sleep(1000);
-//        return message;
-//    }
 
     @GetMapping("/{thepath:\\d+|@me}")
     public String app(){

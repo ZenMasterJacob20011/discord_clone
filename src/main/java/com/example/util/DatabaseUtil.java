@@ -23,10 +23,7 @@ public class DatabaseUtil {
     @Autowired
     public ServerRepository serverRepository;
     public boolean isValidUser(String userName, String password) {
-        if (userRepository.existsByUsernameAndPassword(userName, password)) {
-            return true;
-        }
-        return false;
+        return userRepository.existsByUsernameAndPassword(userName, password);
     }
 
     public boolean isValidUser(User user) {
@@ -41,15 +38,15 @@ public class DatabaseUtil {
         userRepository.save(user);
     }
 
-    public User getUser(Integer ID){
-        return userRepository.findById(ID).get();
-    }
     public User getUser(String userName){
         return userRepository.findPersonIdentifierByUsername(userName);
     }
 
-    public User getUserByJWT(String JWT){
-        return userRepository.findPersonIdentifierByJWT(JWT);
+    public User getUserByJWT(String JWT) throws Exception {
+        if (userRepository.findPersonIdentifierByJWT(JWT).isPresent()) {
+            return userRepository.findPersonIdentifierByJWT(JWT).get();
+        }
+        throw new Exception("could not find user with JWT: " + JWT);
     }
     public void addJWTForUser(User user, String JWT){
         User oldPI = userRepository.findPersonIdentifierByUsername(user.getUsername());
@@ -62,10 +59,7 @@ public class DatabaseUtil {
     }
 
     public boolean containsJWT(String JWT) {
-        if (userRepository.existsByJWT(JWT)) {
-            return true;
-        }
-        return false;
+        return userRepository.existsByJWT(JWT);
     }
     public boolean isValidJWT(String JWT){
         if(containsJWT(JWT)){

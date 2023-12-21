@@ -11,7 +11,7 @@ body {
     margin: 0;
     height: 100%;
     color: white;
-    font-family: "gg sans Normal";
+    font-family: "gg sans Normal", sans-serif;
 }
 .circle{
     border-radius: 50%;
