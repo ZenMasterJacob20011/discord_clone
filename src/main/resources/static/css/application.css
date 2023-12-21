@@ -61,7 +61,8 @@ body{
 }
 
 .search{
-    background: var(--color-black);
+    /*background: var(--color-black);*/
+    background: none;
     border: none;
     outline: none;
     color: white;
@@ -172,8 +173,5 @@ li.squircle > button{
 .circle{
     border-radius: 50%;
     background: var(--color-lighter-dark);
-}
-
-#members-button{
-
+    display: flex;
 }
