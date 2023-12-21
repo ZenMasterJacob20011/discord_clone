@@ -128,8 +128,6 @@ function loadProfileSideBar() {
 }
 
 
-
-
 /**
  * loads all the buttons (including buttons functionality) when you click on the friends sidebar when your in the profile page
  */
@@ -308,11 +306,9 @@ function loadProfileMainContentTop() {
         const allFriendsContainer = document.getElementById("allfriendscontainer");
         for (const acceptedFriend of acceptedFriends) {
             allFriendsContainer.innerHTML += ProfileMainContentAllFriend(acceptedFriend.username);
-            allFriendsContainer.getElementsByClassName("message-button").item(allFriendsContainer.getElementsByClassName("message-button").length-1).onclick = function () {
-                //TODO implement this function
+            allFriendsContainer.getElementsByClassName("message-button").item(allFriendsContainer.getElementsByClassName("message-button").length - 1).onclick = function () {
             }
-            allFriendsContainer.getElementsByClassName("more-button").item(allFriendsContainer.getElementsByClassName("more-button").length-1).onclick = function () {
-                //TODO implement this function
+            allFriendsContainer.getElementsByClassName("more-button").item(allFriendsContainer.getElementsByClassName("more-button").length - 1).onclick = function () {
             }
         }
     }
