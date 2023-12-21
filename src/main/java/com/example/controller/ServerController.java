@@ -78,13 +78,17 @@ public class ServerController {
     }
 
     @PostMapping(value = "/{serverID}/postmessages",consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<?> addMessageToDatabase(@RequestBody Message input, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(value = "serverID") Integer serverID) throws InterruptedException {
+    public ResponseEntity<?> addMessageToDatabase(@RequestBody Message input, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(value = "serverID") Integer serverID){
         JWTService jwtService = new JWTService();
         if(databaseUtil.containsJWT(authorization)) {
             String username = (String) jwtService.decodeJWT(authorization).get("sub");
             input.setUsername(username);
             input.setPostTime(LocalDateTime.now());
-            input.setServer(databaseUtil.getServer(serverID).get());
+            if(databaseUtil.getServer(serverID).isPresent()) {
+                input.setServer(databaseUtil.getServer(serverID).get());
+            }else{
+                return new ResponseEntity<>("Server not found", HttpStatus.NOT_FOUND);
+            }
             databaseUtil.addMessage(input);
             System.out.println(input.getId());
             MessageDTO messageDTO = mapService.getMessageByMessageID(input.getId());
@@ -95,11 +99,11 @@ public class ServerController {
     }
 
 
-    @SendTo("/topic/chat")
-    public Message messageHandler(Message message) throws InterruptedException {
-        Thread.sleep(1000);
-        return message;
-    }
+//    @SendTo("/topic/chat")
+//    public Message messageHandler(Message message) throws InterruptedException {
+//        Thread.sleep(1000);
+//        return message;
+//    }
 
     @GetMapping("/{thepath:\\d+|@me}")
     public String app(){
