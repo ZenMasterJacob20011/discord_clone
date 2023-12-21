@@ -13,6 +13,8 @@ body {
     color: white;
     font-family: "gg sans Normal";
 }
-.circle {
+.circle{
     border-radius: 50%;
+    background: rgb(181, 186, 193);
+    display: flex;
 }
