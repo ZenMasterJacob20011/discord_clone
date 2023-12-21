@@ -1,6 +1,7 @@
 package com.example.dto;
 
 
+import java.time.LocalDateTime;
 
 public class MessageDTO {
 
@@ -11,9 +12,9 @@ public class MessageDTO {
 
     private String username;
 
-
     private Integer serverID;
 
+    private LocalDateTime postTime;
     public MessageDTO() {
 
     }
@@ -56,12 +57,22 @@ public class MessageDTO {
         this.serverID = serverID;
     }
 
+    public LocalDateTime getPostTime() {
+        return postTime;
+    }
+
+    public void setPostTime(LocalDateTime postTime) {
+        this.postTime = postTime;
+    }
+
     @Override
     public String toString() {
-        return "MessageDTOJSON{" +
+        return "MessageDTO{" +
                 "id=" + id +
                 ", message='" + message + '\'' +
                 ", username='" + username + '\'' +
+                ", serverID=" + serverID +
+                ", postTime=" + postTime +
                 '}';
     }
 }

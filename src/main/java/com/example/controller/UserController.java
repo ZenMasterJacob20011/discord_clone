@@ -4,22 +4,13 @@ import com.example.dto.UserDTO;
 import com.example.entity.User;
 import com.example.service.MapService;
 import com.example.util.DatabaseUtil;
-import com.example.util.JWTService;
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.View;
-
-import java.util.HashMap;
 
 @Controller
 @RequestMapping("/user")
@@ -33,20 +24,21 @@ public class UserController {
 
 
     @GetMapping("/getUserInfo")
-    public ResponseEntity<?> getUserInfo(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization){
+    public ResponseEntity<?> getUserInfo(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) throws Exception {
         if(databaseUtil.isValidJWT(authorization)){
-//            PersonIdentifier personIdentifier = databaseUtil.getUserByJWT(authorization);
-            UserDTO userDTO = mapService.getPersonIdentifierByJwt(authorization);
+            UserDTO userDTO = mapService.getUserByJwt(authorization);
             return ResponseEntity.ok(userDTO);
         }
         return new ResponseEntity<>("Invalid auth token",HttpStatus.FORBIDDEN);
     }
     @PutMapping(value = "/sendFriendRequest", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
-    public String sendFriendRequestToUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody String username){
+    public String sendFriendRequestToUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody String username) throws Exception {
         if(databaseUtil.doesUserExist(username)){
             User userReceivingRequest = databaseUtil.getUser(username);
+
             User userSendingRequest = databaseUtil.getUserByJWT(authorization);
+
             if(userReceivingRequest.getPendingFriends().contains(userSendingRequest)){
                 return "<div class=\"text-danger\">Friend Request already sent</div>";
             }else if(userSendingRequest.getAcceptedFriends().contains(userReceivingRequest) || userReceivingRequest.getAcceptedFriends().contains(userSendingRequest)){
@@ -62,7 +54,7 @@ public class UserController {
     }
 
     @PostMapping("/acceptFriendRequest")
-    public ResponseEntity<?> acceptFriendRequestFromUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody String username){
+    public ResponseEntity<?> acceptFriendRequestFromUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody String username) throws Exception {
         if(databaseUtil.isValidJWT(authorization)){
             User userAcceptingRequest = databaseUtil.getUserByJWT(authorization);
             User userBeingAddedAsAFriend = databaseUtil.getUser(username);
@@ -81,7 +73,7 @@ public class UserController {
         return new ResponseEntity<>("An error has occurred",HttpStatus.BAD_REQUEST);
     }
     @PostMapping("/declineFriendRequest")
-    public ResponseEntity<?> declineFriendRequestFromUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody String username){
+    public ResponseEntity<?> declineFriendRequestFromUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody String username) throws Exception {
         if(databaseUtil.isValidJWT(authorization)){
             User userDecliningRequest = databaseUtil.getUserByJWT(authorization);
             User userBeingDeclinedAsAFriend = databaseUtil.getUser(username);

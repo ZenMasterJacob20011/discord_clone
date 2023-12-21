@@ -1,20 +1,19 @@
 import {
-    decodedJWTJSON, getServerInformationByID,
+    getServerInformationByID,
     handleCopyInviteLinkButton,
-    loadNameTag, Message
+    loadNameTag, Message, MessageWithProfilePicture
 } from "./util.js"
-import {handleContextMenu, loadSideServers} from "./serversidebar.js";
+import {loadSideServers} from "./serversidebar.js";
 
 
 loadNameTag();
 loadSideServers();
-handleContextMenu();
 handleCopyInviteLinkButton()
 
 
 async function sendMessage(serverID) {
     const input = document.querySelector("#typedinput").value;
-    const response = await fetch(`http://localhost:8080/server/postmessages/${serverID}`, {
+    const response = await fetch(`http://localhost:8080/server/${serverID}/postmessages`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -33,8 +32,9 @@ async function sendMessage(serverID) {
     }
 }
 
+
 export async function loadMessages(server_id) {
-    fetch(`http://localhost:8080/server/messages/${server_id}`, {
+    fetch(`http://localhost:8080/server/${server_id}/messages`, {
         method: "GET"
     }).then((response) => {
         if (!response.ok) {
@@ -53,20 +53,35 @@ export async function loadMessages(server_id) {
 
 export function addMessage(jsonData) {
     console.log(jsonData)
-    const curUser = decodedJWTJSON.sub;
+    let previousMessageHTML = null
+    let previousTimestamp = null
+    let previousUsername = null
+    if(document.getElementById("main-content-mid").hasChildNodes()) {
+        previousMessageHTML = document.getElementById("main-content-mid").lastElementChild;
+        previousTimestamp = previousMessageHTML.attributes.getNamedItem("data-timestamp").nodeValue;
+        previousUsername = previousMessageHTML.attributes.getNamedItem("data-username").nodeValue;
+    }
+    console.log(previousMessageHTML);
+    const hasSevenMinutesPassed = () => {
+        const previousDatePlusSeven = new Date(previousTimestamp).addMinutes(7);
+        const currentDate = new Date(jsonData.postTime);
+        return currentDate >= previousDatePlusSeven;
+
+    }
     if (window.location.pathname.match("\\/\\d+|\\/@me")[0].substring(1) == jsonData.serverID) {
-        document.getElementById("main-content-mid").innerHTML += Message(jsonData.username === curUser, jsonData.message, jsonData.username);
+        if(previousMessageHTML===null){
+            document.getElementById("main-content-mid").innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
+        }else if(jsonData.username === previousUsername && !hasSevenMinutesPassed()) {
+            document.getElementById("main-content-mid").innerHTML += Message(jsonData.message, jsonData.username, jsonData.postTime);
+        }else{
+            document.getElementById("main-content-mid").innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
+        }
     }
 }
 
-// document.getElementById("members-button").onclick = function (){
-//     let serverMembersBar = document.getElementById("server-members");
-//     if(serverMembersBar.style.display === "none"){
-//         serverMembersBar.style.display = "";
-//     }else{
-//         serverMembersBar.style.display = "none";
-//     }
-// }
+
+
+
 
 function MessageBar() {
     return `
@@ -74,13 +89,21 @@ function MessageBar() {
     `
 }
 
-function ServerOptionsMenu(server_id) {
-    console.log(getServerInformationByID(server_id))
-    const serverName = getServerInformationByID(server_id).serverName
+function UserForServerMemberSidebar(username) {
+    return `
+        <div style="height: 44px" class="d-flex justify-content-start align-items-center">
+            <div class="profile-image"></div>
+            <div class="ps-2">${username}</div>
+        </div>
+    `
+}
+
+
+function ServerOptionsMenu(serverInfo) {
     return `
         <div class="dropdown" style="width: 100%">
             <button id="serverNameButton" class="btn w-100 dropdown-toggle p-0" type="button" data-bs-toggle="dropdown" style="height: 48px">
-                ${getServerInformationByID(server_id).serverName}
+                ${serverInfo.serverName}
             </button>
             <ul class="dropdown-menu">
                 <li class="dropdown-item">1</li>
@@ -93,7 +116,7 @@ function ServerOptionsMenu(server_id) {
 
 function ServerTopBar() {
     return `
-        <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="h-100 container-fluid d-flex justify-content-between align-items-center">
             <div class="flex-container">
                 <svg width="24" height="24" viewBox="0 0 24 24" class="icon" x="0" y="0" aria-hidden="true" role="img">
                     <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M5.88657 21C5.57547 21 5.3399 20.7189 5.39427 20.4126L6.00001 17H2.59511C2.28449 17 2.04905 16.7198 2.10259 16.4138L2.27759 15.4138C2.31946 15.1746 2.52722 15 2.77011 15H6.35001L7.41001 9H4.00511C3.69449 9 3.45905 8.71977 3.51259 8.41381L3.68759 7.41381C3.72946 7.17456 3.93722 7 4.18011 7H7.76001L8.39677 3.41262C8.43914 3.17391 8.64664 3 8.88907 3H9.87344C10.1845 3 10.4201 3.28107 10.3657 3.58738L9.76001 7H15.76L16.3968 3.41262C16.4391 3.17391 16.6466 3 16.8891 3H17.8734C18.1845 3 18.4201 3.28107 18.3657 3.58738L17.76 7H21.1649C21.4755 7 21.711 7.28023 21.6574 7.58619L21.4824 8.58619C21.4406 8.82544 21.2328 9 20.9899 9H17.41L16.35 15H19.7549C20.0655 15 20.301 15.2802 20.2474 15.5862L20.0724 16.5862C20.0306 16.8254 19.8228 17 19.5799 17H16L15.3632 20.5874C15.3209 20.8261 15.1134 21 14.8709 21H13.8866C13.5755 21 13.3399 20.7189 13.3943 20.4126L14 17H8.00001L7.36325 20.5874C7.32088 20.8261 7.11337 21 6.87094 21H5.88657ZM9.41045 9L8.35045 15H14.3504L15.4104 9H9.41045Z"></path>
@@ -101,7 +124,7 @@ function ServerTopBar() {
                 <h5 class="mb-0 p-2" id="group-name">Chat</h5>
             </div>
             <div class="flex-container" style="gap: 1rem">
-                <button class="members-button">
+                <button id="members-button">
                     <svg x="0" y="0" class="icon" aria-hidden="true" role="img" width="24" height="24" viewBox="0 0 24 24">
                         <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M14 8.00598C14 10.211 12.206 12.006 10 12.006C7.795 12.006 6 10.211 6 8.00598C6 5.80098 7.794 4.00598 10 4.00598C12.206 4.00598 14 5.80098 14 8.00598ZM2 19.006C2 15.473 5.29 13.006 10 13.006C14.711 13.006 18 15.473 18 19.006V20.006H2V19.006Z"></path>
                         <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M14 8.00598C14 10.211 12.206 12.006 10 12.006C7.795 12.006 6 10.211 6 8.00598C6 5.80098 7.794 4.00598 10 4.00598C12.206 4.00598 14 5.80098 14 8.00598ZM2 19.006C2 15.473 5.29 13.006 10 13.006C14.711 13.006 18 15.473 18 19.006V20.006H2V19.006Z"></path>
@@ -121,12 +144,33 @@ function ServerTopBar() {
 }
 
 
-export function loadServerPage(server_id) {
+function loadServerMembers(serverInfo) {
+    const serverMembers = serverInfo.users;
+    console.log(serverMembers)
+    const membersGroup = document.getElementById("members-group")
+    membersGroup.innerHTML = ``;
+    for (const serverMember of serverMembers) {
+        membersGroup.innerHTML += UserForServerMemberSidebar(serverMember.username);
+    }
+}
+
+export async function loadServerPage(server_id) {
+    const serverInfo = await getServerInformationByID(server_id)
     document.getElementById("content-sidebar-mid").innerHTML = ``;
-    document.getElementById("content-sidebar-top").innerHTML = ServerOptionsMenu(server_id);
+    document.getElementById("main-content-mid").innerHTML = ``;
+    document.getElementById("content-sidebar-top").innerHTML = ServerOptionsMenu(serverInfo);
     document.getElementById("main-content-top").innerHTML = ServerTopBar();
     loadMessages(server_id)
     document.getElementById("main-content-bot").innerHTML = MessageBar();
+    loadServerMembers(serverInfo);
+    document.getElementById("members-button").onclick = function () {
+        let serverMembersBar = document.getElementById("server-members");
+        if (serverMembersBar.style.display === "none") {
+            serverMembersBar.style.display = "";
+        } else {
+            serverMembersBar.style.display = "none";
+        }
+    }
     document.getElementById("typedinput").addEventListener("keydown", e => {
         if (e.key === 'Enter') {
             if (document.querySelector("#typedinput").value !== "" && document.activeElement === document.getElementById("typedinput")) {
@@ -134,22 +178,4 @@ export function loadServerPage(server_id) {
             }
         }
     })
-}
-
-function ServerCircle(serverID, serverName) {
-    return `
-        <li class="squircle">
-            <button id="${serverID}" data-link>${serverName.substring(0, 2)}</button>
-        </li>
-    `
-}
-
-export function createServerCircle(serverID, serverName) {
-    let squircle = ServerCircle(serverID, serverName);
-    insertServerCircleIntoSideBar(squircle);
-}
-
-
-function insertServerCircleIntoSideBar(squircle) {
-    document.getElementById("user-server-divider").insertAdjacentHTML("afterend", squircle);
 }

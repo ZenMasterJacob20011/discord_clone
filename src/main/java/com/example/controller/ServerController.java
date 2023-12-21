@@ -1,9 +1,10 @@
 package com.example.controller;
 
 import com.example.dto.MessageDTO;
+import com.example.dto.ServerDTO;
 import com.example.entity.Message;
-import com.example.entity.User;
 import com.example.entity.Server;
+import com.example.entity.User;
 import com.example.service.MapService;
 import com.example.util.DatabaseUtil;
 import com.example.util.JWTService;
@@ -12,11 +13,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,12 @@ public class ServerController {
         }
         Map<String,Object> JWT = jwtService.decodeJWT(authorization);
         User user = databaseUtil.getUser((String)JWT.get("sub"));
-        databaseUtil.addServerToUser(serverID, user.getUsername());
+        try {
+            databaseUtil.addServerToUser(serverID, user.getUsername());
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.FOUND).body(e.getMessage());
+        }
         return ResponseEntity.ok(user);
     }
     @PostMapping("/deleteserver")
@@ -58,33 +64,37 @@ public class ServerController {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-    @GetMapping("/messages/{serverID}")
+    @GetMapping("/{serverID}/messages")
     @ResponseBody
     public List<MessageDTO> getMessages(@PathVariable(value = "serverID") Integer serverID){
         return mapService.getMessageByServerID(serverID);
     }
 
+    @GetMapping("/{serverID}/getServerInfo")
+    @ResponseBody
+    public ServerDTO getServerInfoByID(@PathVariable(value = "serverID") Integer serverID) throws Exception {
+        return mapService.getServerByID(serverID);
+    }
 
-    @PostMapping(value = "/postmessages/{serverID}",consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<?> addMessageToDatabase(@RequestBody Message input, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(value = "serverID") Integer serverID) throws InterruptedException {
+    @PostMapping(value = "/{serverID}/postmessages",consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> addMessageToDatabase(@RequestBody Message input, @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(value = "serverID") Integer serverID){
         JWTService jwtService = new JWTService();
         if(databaseUtil.containsJWT(authorization)) {
             String username = (String) jwtService.decodeJWT(authorization).get("sub");
             input.setUsername(username);
-            input.setServer(databaseUtil.getServer(serverID).get());
-            MessageDTO messageDTO = mapService.convertMessageToDTO(input);
+            input.setPostTime(LocalDateTime.now());
+            if(databaseUtil.getServer(serverID).isPresent()) {
+                input.setServer(databaseUtil.getServer(serverID).get());
+            }else{
+                return new ResponseEntity<>("Server not found", HttpStatus.NOT_FOUND);
+            }
             databaseUtil.addMessage(input);
+            System.out.println(input.getId());
+            MessageDTO messageDTO = mapService.getMessageByMessageID(input.getId());
             simpMessagingTemplate.convertAndSend("/topic/chat",messageDTO);
             return ResponseEntity.ok(messageDTO);
         }
         return new ResponseEntity<>("Invalid auth token", HttpStatus.FORBIDDEN);
-    }
-
-
-    @SendTo("/topic/chat")
-    public Message messageHandler(Message message) throws InterruptedException {
-        Thread.sleep(1000);
-        return message;
     }
 
     @GetMapping("/{thepath:\\d+|@me}")

@@ -3,6 +3,7 @@ package com.example.controller;
 import com.example.entity.Server;
 import com.example.util.DatabaseUtil;
 import com.example.util.JWTService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/invite")
 public class InviteController {
 
+    @Autowired
     private DatabaseUtil databaseUtil;
-    @GetMapping("/{serverID}")
+    @GetMapping("/getInviteLink/{serverID}")
     public ResponseEntity<?> createInviteLink(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwt, @PathVariable(value = "serverID") Integer serverID){
         //have some function that generates an ID based on the serverID input...
         //server should have a generated invite link stored in the server entity

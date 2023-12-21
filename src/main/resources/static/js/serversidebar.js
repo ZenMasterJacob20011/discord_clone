@@ -1,9 +1,28 @@
-import {addErrorMessageToHTML, addServerToUser, loadUsersInfo, user} from "./util.js";
-import {createServerCircle, loadServerPage} from "./serverpage.js";
-import {loadProfilePage} from "./profilepage.js";
+import {
+    addErrorMessageToHTML,
+    addServerToUser,
+    getInviteLink,
+    getServerInformationByID,
+    loadUsersInfo,
+    user
+} from "./util.js";
 
+function ServerCircle(serverID, serverName) {
+    return `
+        <li class="squircle">
+            <button id="${serverID}" data-link>${serverName.substring(0, 2)}</button>
+        </li>
+    `
+}
 
-let servers = []
+function insertServerCircleIntoSideBar(squircle) {
+    document.getElementById("user-server-divider").insertAdjacentHTML("afterend", squircle);
+}
+
+function createServerCircle(serverID, serverName) {
+    let squircle = ServerCircle(serverID, serverName);
+    insertServerCircleIntoSideBar(squircle);
+}
 
 export async function loadSideServers() {
     let servers = user.serverList;
@@ -12,32 +31,40 @@ export async function loadSideServers() {
     }
 }
 
-export function handleContextMenu() {
+function handleContextMenu() {
     let $contextMenu = $("#contextMenu");
     let curServerID;
-    let curServerName;
-    $("body").on("contextmenu", "li.squircle button", function (e) {
+    let serverInfo;
+    $("body").on("contextmenu", "[data-link]", function (e) {
         console.log(e);
+        if (e.target.id === "@me") {
+            return false;
+        }
         $contextMenu.css({
             display: "block",
             left: e.pageX,
             top: e.pageY
         });
         curServerID = e.currentTarget.id;
-        curServerName = e.currentTarget.servername;
+        getServerInformationByID(curServerID).then(r => {
+            serverInfo = r;
+        });
         return false;
-    })
-    $contextMenu.on("click", "button#invite-people", function (e) {
-        getInviteLink(curServerID);
-        $("#insertservername").text(`Invite friends to ${curServerName} server`);
-        $contextMenu.hide();
+    });
+    $contextMenu.on("click", "#invite-people", function () {
+        getInviteLink(curServerID).then(responseJSON => {
+            $contextMenu.hide();
+            $("#insertservername").text(`Invite friends to ${serverInfo.serverName} server`);
+            let inviteCode = responseJSON.invite.inviteCode;
+            $("#inviteCode").text(`http://localhost:8080/invite/${inviteCode}`);
+        });
     })
     $('body').click(function () {
         $($contextMenu).hide();
     })
 }
 
-
+handleContextMenu();
 
 export async function createServer() {
     let serverName = document.getElementById("serverName").value;
