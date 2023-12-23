@@ -1,7 +1,6 @@
 package com.example.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -11,14 +10,14 @@ public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private Integer messageID;
 
     private String message;
 
     private String username;
 
     @ManyToOne
-    private Server server;
+    private Channel channel;
 
     @JsonFormat(pattern = "yyyy-mm-dd HH:mm:ss")
     private LocalDateTime postTime;
@@ -56,30 +55,30 @@ public class Message {
         this.username = username;
     }
 
-    public Integer getId() {
-        return id;
+    public Integer getMessageID() {
+        return messageID;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setMessageID(Integer id) {
+        this.messageID = id;
     }
 
-    public Server getServer() {
-        return server;
+    public Channel getChannel() {
+        return channel;
     }
 
-    public void setServer(Server server) {
-        this.server = server;
+    public void setChannel(Channel server) {
+        this.channel = server;
     }
 
 
     @Override
     public String toString() {
         return "Message{" +
-                "id=" + id +
+                "id=" + messageID +
                 ", message='" + message + '\'' +
                 ", username='" + username + '\'' +
-                ", server=" + server +
+                ", server=" + channel +
                 ", postTime=" + postTime +
                 '}';
     }

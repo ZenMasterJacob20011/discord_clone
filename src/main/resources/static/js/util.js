@@ -93,7 +93,9 @@ export function Message(message, username, timestamp) {
         </div>
     `
 }
+export function inviteFriendToServer(username, serverID) {
 
+}
 
 export async function loadUsersInfo() {
     const response = await fetch('http://localhost:8080/user/getUserInfo', {
@@ -164,7 +166,7 @@ export async function getInviteLink(serverID) {
 /**
  * returns server information given a server_id as a JSON object
  * @param server_id {String} the id of the server e.g. 1
- * @returns {any} The JSON object containing server information
+ * @returns The JSON object containing server information
  */
 export async function getServerInformationByID(server_id) {
     if (localStorage.getItem(server_id) === null){
@@ -174,13 +176,24 @@ export async function getServerInformationByID(server_id) {
             if (!r.ok){
                 throw Error(`Could not fetch server info with the id ${server_id}`);
             }
-            r.json().then(serverInfo => {
-                console.log(serverInfo)
-                localStorage.setItem(String(server_id),JSON.stringify(serverInfo));
-                return serverInfo;
-            })
+            return r.json();
+        }).then(serverInfo => {
+            console.log(serverInfo)
+            localStorage.setItem(String(server_id),JSON.stringify(serverInfo));
+            return serverInfo;
         });
     }
     return JSON.parse(localStorage.getItem(server_id));
 
+}
+
+/**
+ * This will fetch the server with only the given two users in it. The object with be a serverDTO as JSON
+ * @param username
+ * @returns {Promise<Response>}
+ */
+export function getServerIDWithOnlyThisUserInIt(username) {
+    return fetch(`http://localhost:8080/server/directmessage/${username}`,{
+        method: "GET"
+    });
 }

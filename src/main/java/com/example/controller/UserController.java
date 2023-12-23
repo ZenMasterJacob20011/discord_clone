@@ -3,7 +3,7 @@ package com.example.controller;
 import com.example.dto.UserDTO;
 import com.example.entity.User;
 import com.example.service.MapService;
-import com.example.util.DatabaseUtil;
+import com.example.service.DatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     @Autowired
-    private DatabaseUtil databaseUtil;
+    private DatabaseService databaseService;
 
     @Autowired
     private MapService mapService;
@@ -25,7 +25,7 @@ public class UserController {
 
     @GetMapping("/getUserInfo")
     public ResponseEntity<?> getUserInfo(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) throws Exception {
-        if(databaseUtil.isValidJWT(authorization)){
+        if(databaseService.isValidJWT(authorization)){
             UserDTO userDTO = mapService.getUserByJwt(authorization);
             return ResponseEntity.ok(userDTO);
         }
@@ -34,10 +34,10 @@ public class UserController {
     @PutMapping(value = "/sendFriendRequest", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String sendFriendRequestToUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody String username) throws Exception {
-        if(databaseUtil.doesUserExist(username)){
-            User userReceivingRequest = databaseUtil.getUser(username);
+        if(databaseService.doesUserExist(username)){
+            User userReceivingRequest = databaseService.getUser(username);
 
-            User userSendingRequest = databaseUtil.getUserByJWT(authorization);
+            User userSendingRequest = databaseService.getUserByJWT(authorization);
 
             if(userReceivingRequest.getPendingFriends().contains(userSendingRequest)){
                 return "<div class=\"text-danger\">Friend Request already sent</div>";
@@ -45,7 +45,7 @@ public class UserController {
                 return "<div class=\"text-danger\">This user is already your friend</div>";
             }
             userReceivingRequest.addPendingFriend(userSendingRequest);
-            databaseUtil.saveUser(userReceivingRequest);
+            databaseService.saveUser(userReceivingRequest);
             System.out.println(username);
             System.out.println(userSendingRequest.getUsername() + " just sent a friend request to " + userReceivingRequest.getUsername());
             return "<div class=\"text-success\">Friend Request sent successfully</div>";
@@ -55,16 +55,16 @@ public class UserController {
 
     @PostMapping("/acceptFriendRequest")
     public ResponseEntity<?> acceptFriendRequestFromUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody String username) throws Exception {
-        if(databaseUtil.isValidJWT(authorization)){
-            User userAcceptingRequest = databaseUtil.getUserByJWT(authorization);
-            User userBeingAddedAsAFriend = databaseUtil.getUser(username);
+        if(databaseService.isValidJWT(authorization)){
+            User userAcceptingRequest = databaseService.getUserByJWT(authorization);
+            User userBeingAddedAsAFriend = databaseService.getUser(username);
             if(userAcceptingRequest.getPendingFriends().contains(userBeingAddedAsAFriend)) {
                 userBeingAddedAsAFriend.addAcceptedFriend(userAcceptingRequest);
                 userAcceptingRequest.addAcceptedFriend(userBeingAddedAsAFriend);
                 userAcceptingRequest.removePendingFriend(userBeingAddedAsAFriend);
                 System.out.println(userAcceptingRequest.getPendingFriends());
-                databaseUtil.saveUser(userAcceptingRequest);
-                databaseUtil.saveUser(userBeingAddedAsAFriend);
+                databaseService.saveUser(userAcceptingRequest);
+                databaseService.saveUser(userBeingAddedAsAFriend);
                 return new ResponseEntity<>("Friend Request Accepted", HttpStatus.OK);
             }else{
                 return new ResponseEntity<>("This user no longer exists in pending friend requests",HttpStatus.NOT_FOUND);
@@ -74,13 +74,13 @@ public class UserController {
     }
     @PostMapping("/declineFriendRequest")
     public ResponseEntity<?> declineFriendRequestFromUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody String username) throws Exception {
-        if(databaseUtil.isValidJWT(authorization)){
-            User userDecliningRequest = databaseUtil.getUserByJWT(authorization);
-            User userBeingDeclinedAsAFriend = databaseUtil.getUser(username);
+        if(databaseService.isValidJWT(authorization)){
+            User userDecliningRequest = databaseService.getUserByJWT(authorization);
+            User userBeingDeclinedAsAFriend = databaseService.getUser(username);
             if(userDecliningRequest.getPendingFriends().contains(userBeingDeclinedAsAFriend)) {
                 userDecliningRequest.removePendingFriend(userBeingDeclinedAsAFriend);
                 System.out.println(userDecliningRequest.getPendingFriends());
-                databaseUtil.saveUser(userDecliningRequest);
+                databaseService.saveUser(userDecliningRequest);
                 return new ResponseEntity<>("Friend Request Declined", HttpStatus.OK);
             }else{
                 return new ResponseEntity<>("This user no longer exists in pending friend request",HttpStatus.NOT_FOUND);

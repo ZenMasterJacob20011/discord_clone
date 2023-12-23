@@ -1,28 +1,29 @@
 package com.example.dto;
 
-import com.example.entity.Message;
+import com.example.entity.Channel;
+import com.example.entity.Invite;
 import com.example.entity.User;
 
 import java.util.List;
 
 public class ServerDTO {
 
-    private Integer id;
+    private Integer serverID;
 
     private String serverName;
 
-
-    private List<Message> message;
-
+    private List<Channel> channels;
 
     private List<User> users;
 
-    public Integer getId() {
-        return id;
+    private List<Invite> invites;
+
+    public Integer getServerID() {
+        return serverID;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setServerID(Integer serverID) {
+        this.serverID = serverID;
     }
 
     public String getServerName() {
@@ -33,12 +34,12 @@ public class ServerDTO {
         this.serverName = serverName;
     }
 
-    public List<Message> getMessage() {
-        return message;
+    public List<Channel> getChannels() {
+        return channels;
     }
 
-    public void setMessage(List<Message> message) {
-        this.message = message;
+    public void setChannels(List<Channel> channels) {
+        this.channels = channels;
     }
 
     public List<User> getUsers() {
@@ -47,5 +48,13 @@ public class ServerDTO {
 
     public void setUsers(List<User> users) {
         this.users = users;
+    }
+
+    public List<Invite> getInvites() {
+        return invites;
+    }
+
+    public void setInvites(List<Invite> invites) {
+        this.invites = invites;
     }
 }

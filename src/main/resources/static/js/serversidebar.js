@@ -1,8 +1,8 @@
 import {
     addErrorMessageToHTML,
-    addServerToUser,
+    addServerToUser, Circle,
     getInviteLink,
-    getServerInformationByID,
+    getServerInformationByID, inviteFriendToServer,
     loadUsersInfo,
     user
 } from "./util.js";
@@ -27,7 +27,7 @@ function createServerCircle(serverID, serverName) {
 export async function loadSideServers() {
     let servers = user.serverList;
     for (const server of servers) {
-        createServerCircle(server.id, server.serverName);
+        createServerCircle(server.serverID, server.serverName);
     }
 }
 
@@ -55,7 +55,38 @@ function handleContextMenu() {
         getInviteLink(curServerID).then(responseJSON => {
             $contextMenu.hide();
             $("#insertservername").text(`Invite friends to ${serverInfo.serverName} server`);
-            let inviteCode = responseJSON.invite.inviteCode;
+            function createInviteFriendButtonBars() {
+                getServerInformationByID(curServerID).then(server => {
+                    function createInviteFriendButtonBar(user) {
+                        document.getElementById("invite-friends-list").insertAdjacentHTML("beforeend",
+                            `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    ${Circle("32px", "32px")}
+                                    <div style="padding-left: 40px">
+                                        ${user.username}
+                                    </div>
+                                </div>
+                                <div>
+                                    <button class="invite-button btn btn-outline-success btn-sm text-white">Invite</button>
+                                </div>
+                            </div>
+                            `
+                        );
+                        document.getElementsByClassName("invite-button")
+                            .item(document.getElementsByClassName("invite-button").length-1)
+                            .addEventListener("click",function () {
+                                inviteFriendToServer(user.username, server.id);
+                            })
+                    }
+                    document.getElementById("invite-friends-list").innerHTML = "";
+                    user.acceptedFriends.forEach(createInviteFriendButtonBar)
+                })
+                document.getElementById("invite-friends-list")
+            }
+
+            createInviteFriendButtonBars()
+            let inviteCode = responseJSON.invites[responseJSON.invites.length-1].inviteCode;
             $("#inviteCode").text(`http://localhost:8080/invite/${inviteCode}`);
         });
     })
@@ -83,8 +114,8 @@ export async function createServer() {
         return;
     }
     const json = await response.json();
-    createServerCircle(json.id, serverName);
-    await addServerToUser(localStorage.getItem("token"), json.id);
+    createServerCircle(json.serverID, serverName);
+    await addServerToUser(localStorage.getItem("token"), json.serverID);
     await loadUsersInfo();
 }
 

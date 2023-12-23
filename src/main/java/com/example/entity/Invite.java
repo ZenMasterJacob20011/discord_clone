@@ -1,6 +1,5 @@
 package com.example.entity;
 
-import com.example.dto.InviteDTO;
 import jakarta.persistence.*;
 
 import java.util.UUID;
@@ -10,13 +9,14 @@ public class Invite {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private Long inviteID;
 
+    @Column(unique = true)
     private String inviteCode;
 
     private String inviter;
 
-    @OneToOne(mappedBy = "invite")
+    @ManyToOne
     private Server server;
 
     public Invite(){
@@ -42,6 +42,14 @@ public class Invite {
 
     public void setInviter(String inviter) {
         this.inviter = inviter;
+    }
+
+    public Server getServer() {
+        return server;
+    }
+
+    public void setServer(Server server) {
+        this.server = server;
     }
 
     public static String generateInviteCode() {

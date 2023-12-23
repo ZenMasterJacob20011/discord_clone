@@ -6,13 +6,13 @@ import java.time.LocalDateTime;
 public class MessageDTO {
 
 
-    private Integer id;
+    private Integer messageID;
 
     private String message;
 
     private String username;
 
-    private Integer serverID;
+    private Integer channelID;
 
     private LocalDateTime postTime;
     public MessageDTO() {
@@ -22,6 +22,14 @@ public class MessageDTO {
     public MessageDTO(String message, String username) {
         this.message = message;
         this.username = username;
+    }
+
+    public Integer getMessageID() {
+        return messageID;
+    }
+
+    public void setMessageID(Integer messageID) {
+        this.messageID = messageID;
     }
 
     public String getMessage() {
@@ -40,21 +48,12 @@ public class MessageDTO {
         this.username = username;
     }
 
-    public Integer getId() {
-        return id;
+    public Integer getChannelID() {
+        return channelID;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-
-    public Integer getServerID() {
-        return serverID;
-    }
-
-    public void setServerID(Integer serverID) {
-        this.serverID = serverID;
+    public void setChannelID(Integer channelID) {
+        this.channelID = channelID;
     }
 
     public LocalDateTime getPostTime() {
@@ -68,10 +67,10 @@ public class MessageDTO {
     @Override
     public String toString() {
         return "MessageDTO{" +
-                "id=" + id +
+                "id=" + messageID +
                 ", message='" + message + '\'' +
                 ", username='" + username + '\'' +
-                ", serverID=" + serverID +
+                ", serverID=" + channelID +
                 ", postTime=" + postTime +
                 '}';
     }

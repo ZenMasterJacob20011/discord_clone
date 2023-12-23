@@ -14,7 +14,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private Integer userID;
     private String username;
 
     private String password;
@@ -36,19 +36,19 @@ public class User {
         pendingFriends = new ArrayList<>();
     }
 
-    public User(Integer id, String username, String password) {
+    public User(Integer userID, String username, String password) {
         this();
-        this.id = id;
+        this.userID = userID;
         this.username = username;
         this.password = password;
     }
 
-    public Integer getId() {
-        return id;
+    public Integer getUserID() {
+        return userID;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setUserID(Integer id) {
+        this.userID = id;
     }
 
     public String getUsername() {
