@@ -14,15 +14,15 @@ const router = async () => {
     }
 }
 
-export function navigateToServerPage(server_id) {
-    history.pushState(null, null, `${server_id}`);
+export function navigateTo(href) {
+    history.pushState(null, null, `${href}`);
     router();
 }
 
 document.addEventListener("click", e => {
     if (e.target.matches("[data-link]")) {
         e.preventDefault();
-        navigateToServerPage(e.target.id);
+        navigateTo(e.target.id);
     }
 })
 

@@ -12,22 +12,30 @@ public class Server {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private Integer serverID;
 
     private String serverName;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "server")
-    private List<Message> messages;
+    @OneToMany(mappedBy = "server",cascade = CascadeType.ALL)
+    private List<Channel> channels;
 
-    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "serverList")
+    @ManyToMany(mappedBy = "serverList")
     private List<User> users;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    private Invite invite;
+    @OneToMany(mappedBy = "server", cascade = CascadeType.ALL)
+    private List<Invite> invites;
 
     public Server() {
-        messages = new ArrayList<>();
         users = new ArrayList<>();
+        channels = new ArrayList<>();
+    }
+
+    public Integer getServerID() {
+        return serverID;
+    }
+
+    public void setServerID(Integer serverID) {
+        this.serverID = serverID;
     }
 
     public String getServerName() {
@@ -37,16 +45,14 @@ public class Server {
     public void setServerName(String serverName) {
         this.serverName = serverName;
     }
-
     @JsonIgnore
-    public List<Message> getMessages() {
-        return messages;
+    public List<Channel> getChannels() {
+        return channels;
     }
 
-    public void setMessages(List<Message> message) {
-        this.messages = message;
+    public void setChannels(List<Channel> channels) {
+        this.channels = channels;
     }
-
     @JsonIgnore
     public List<User> getUsers() {
         return users;
@@ -55,24 +61,12 @@ public class Server {
     public void setUsers(List<User> users) {
         this.users = users;
     }
-
-    public void setId(Integer id) {
-        this.id = id;
+    @JsonIgnore
+    public List<Invite> getInvites() {
+        return invites;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public Invite getInvite() {
-        return invite;
-    }
-
-    public void setInvite(Invite invite) {
-        this.invite = invite;
-    }
-
-    public void generateInvite(String inviter) {
-        setInvite(new Invite(inviter));
+    public void setInvites(List<Invite> invites) {
+        this.invites = invites;
     }
 }

@@ -1,7 +1,7 @@
 package com.example.controller;
 
 import com.example.entity.User;
-import com.example.util.DatabaseUtil;
+import com.example.service.DatabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +16,7 @@ public class SignupController {
 
 
     @Autowired
-    private DatabaseUtil databaseUtil;
+    private DatabaseService databaseService;
 
     @GetMapping
     public String returnSignUpPage(Model model) {
@@ -27,10 +27,10 @@ public class SignupController {
 
     @PostMapping
     public String saveUserInDatabase(@ModelAttribute("User") User user) {
-        if(databaseUtil.doesUserExist(user.getUsername())){
+        if(databaseService.doesUserExist(user.getUsername())){
             return "redirect:/signup";
         }
-        databaseUtil.saveUser(user);
+        databaseService.saveUser(user);
         return "redirect:/";
     }
 }

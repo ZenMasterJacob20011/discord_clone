@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface ServerRepository extends ListCrudRepository<Server,Integer> {
-    Optional<Server> findServersByInvite_InviteCode(String inviteCode);
+    Optional<Server> findServerByInvites_InviteCode(String inviteCode);
 }

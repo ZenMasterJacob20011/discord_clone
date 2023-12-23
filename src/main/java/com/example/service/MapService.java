@@ -43,8 +43,11 @@ public class MapService {
         throw new Exception("could not find server with id: " + id);
     }
 
-    public List<MessageDTO> getMessageByServerID(Integer serverID) {
-        return messageRepository.getMessagesByServer_Id(serverID).stream().map(this::convertMessageToDTO).collect(Collectors.toList());
+    public List<MessageDTO> findMessageByChannelID(Integer channelID) throws Exception {
+        if (messageRepository.findMessagesByChannel_ChannelID(channelID).isPresent()) {
+            return messageRepository.findMessagesByChannel_ChannelID(channelID).get().stream().map(this::convertMessageToDTO).collect(Collectors.toList());
+        }
+        throw new Exception("could not find channel with ID: " + channelID);
     }
 
     public MessageDTO getMessageByMessageID(Integer messageID) {
@@ -56,7 +59,7 @@ public class MapService {
 
     private UserDTO convertPersonIdentifierToDTO(User user) {
         UserDTO userDTO = new UserDTO();
-        userDTO.setId(user.getId());
+        userDTO.setUserID(user.getUserID());
         userDTO.setUsername(user.getUsername());
         userDTO.setServerList(user.getServerList());
         userDTO.setAcceptedFriends(user.getAcceptedFriends());
@@ -66,19 +69,20 @@ public class MapService {
 
     private ServerDTO convertServerToDTO(Server server) {
         ServerDTO serverDTO = new ServerDTO();
-        serverDTO.setId(server.getId());
+        serverDTO.setServerID(server.getServerID());
         serverDTO.setServerName(server.getServerName());
         serverDTO.setUsers(server.getUsers());
-        serverDTO.setMessage(server.getMessages());
+        serverDTO.setChannels(server.getChannels());
+        serverDTO.setInvites(server.getInvites());
         return serverDTO;
     }
 
     private MessageDTO convertMessageToDTO(Message message) {
         MessageDTO messageDTO = new MessageDTO();
         messageDTO.setMessage(message.getMessage());
-        messageDTO.setServerID(message.getServer().getId());
+        messageDTO.setChannelID(message.getChannel().getChannelID());
         messageDTO.setUsername(message.getUsername());
-        messageDTO.setId(message.getId());
+        messageDTO.setMessageID(message.getMessageID());
         messageDTO.setPostTime(message.getPostTime());
         return messageDTO;
     }

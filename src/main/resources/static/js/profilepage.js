@@ -1,4 +1,4 @@
-import {Circle, jwt, SearchBar, user} from "./util.js";
+import {Circle, getServerIDWithOnlyThisUserInIt, jwt, SearchBar, user} from "./util.js";
 
 /**
  * Contains HTML for the top of the profile sidebar
@@ -126,6 +126,8 @@ function loadProfileSideBar() {
     document.getElementById("content-sidebar-top").innerHTML = TopProfileSideBar();
     document.getElementById("content-sidebar-mid").innerHTML = MidProfileSideBar();
 }
+
+
 
 
 /**
@@ -307,6 +309,7 @@ function loadProfileMainContentTop() {
         for (const acceptedFriend of acceptedFriends) {
             allFriendsContainer.innerHTML += ProfileMainContentAllFriend(acceptedFriend.username);
             allFriendsContainer.getElementsByClassName("message-button").item(allFriendsContainer.getElementsByClassName("message-button").length - 1).onclick = function () {
+                const serverID = getServerIDWithOnlyThisUserInIt(acceptedFriend.username);
             }
             allFriendsContainer.getElementsByClassName("more-button").item(allFriendsContainer.getElementsByClassName("more-button").length - 1).onclick = function () {
             }

@@ -6,7 +6,7 @@ import com.example.entity.Server;
 import java.util.List;
 
 public class UserDTO {
-    private Integer id;
+    private Integer userID;
     private String username;
 
     private List<Server> serverList;
@@ -16,12 +16,12 @@ public class UserDTO {
     private List<User> pendingFriends;
 
 
-    public Integer getId() {
-        return id;
+    public Integer getUserID() {
+        return userID;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setUserID(Integer userID) {
+        this.userID = userID;
     }
 
     public String getUsername() {

@@ -1,8 +1,11 @@
 package com.example.controller;
 
+import com.example.dto.ServerDTO;
+import com.example.entity.Invite;
 import com.example.entity.Server;
-import com.example.util.DatabaseUtil;
-import com.example.util.JWTService;
+import com.example.service.DatabaseService;
+import com.example.service.JWTService;
+import com.example.service.MapService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,33 +21,29 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class InviteController {
 
     @Autowired
-    private DatabaseUtil databaseUtil;
+    private DatabaseService databaseService;
+    @Autowired
+    private MapService mapService;
     @GetMapping("/getInviteLink/{serverID}")
-    public ResponseEntity<?> createInviteLink(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwt, @PathVariable(value = "serverID") Integer serverID){
-        //have some function that generates an ID based on the serverID input...
-        //server should have a generated invite link stored in the server entity
-        /*when user navigates to invite link the browser will perform a request and the request will add server to user based on
-        jwt token*/
-        if(databaseUtil.getServer(serverID).isPresent()) {
-            Server server = databaseUtil.getServer(serverID).get();
+    public ResponseEntity<?> createInviteLink(@RequestHeader(HttpHeaders.AUTHORIZATION) String jwt, @PathVariable(value = "serverID") Integer serverID) throws Exception {
+        if(databaseService.findServerByServerID(serverID).isPresent()) {
             JWTService jwtService = new JWTService();
-            server.generateInvite(jwtService.getUsernameFromJWT(jwt));
-            databaseUtil.saveServer(server);
-            return new ResponseEntity<>(server, HttpStatus.OK);
+            String inviter = jwtService.getUsernameFromJWT(jwt);
+            databaseService.generateInvite(serverID,inviter);
+            ServerDTO serverDTO = mapService.getServerByID(serverID);
+            return new ResponseEntity<>(serverDTO, HttpStatus.OK);
         }
         return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/{inviteCode}")
-    public String acceptInvitePage(Model model, @PathVariable(value = "inviteCode") String inviteCode){
-        if(databaseUtil.getServerByInviteCode(inviteCode).isPresent()) {
-            Server server = databaseUtil.getServerByInviteCode(inviteCode).get();
-            String inviter = server.getInvite().getInviter();
-            model.addAttribute("username", inviter);
-            model.addAttribute("servername", server.getServerName());
-            model.addAttribute("serverid", server.getId().toString());
-            return "invite";
-        }
-        return "redirect:/login";
+    public String acceptInvitePage(Model model, @PathVariable(value = "inviteCode") String inviteCode) throws Exception {
+        Invite invite = databaseService.getInviteByInviteCode(inviteCode);
+        Server server = invite.getServer();
+        String inviter = invite.getInviter();
+        model.addAttribute("username", inviter);
+        model.addAttribute("servername", server.getServerName());
+        model.addAttribute("serverid", server.getServerID().toString());
+        return "invite";
     }
 }

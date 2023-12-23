@@ -169,6 +169,9 @@ li.squircle > button{
     position: absolute;
     display: none;
 }
+#contextMenu li:hover{
+    background-color: rgb(60, 69, 165);
+}
 
 .circle{
     border-radius: 50%;

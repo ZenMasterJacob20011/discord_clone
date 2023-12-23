@@ -1,4 +1,4 @@
-package com.example.util;
+package com.example.service;
 
 import com.example.entity.User;
 import io.jsonwebtoken.Jwts;
@@ -17,7 +17,7 @@ import java.util.UUID;
 public class JWTService {
 
     @Autowired
-    private DatabaseUtil databaseUtil;
+    private DatabaseService databaseService;
 
     @Value("${jwt.secret}")
     private String secret = "password";
@@ -45,7 +45,7 @@ public class JWTService {
         return gsonJsonParser.parseMap(payload);
     }
     public boolean isValidJWT(String JWT){
-        return databaseUtil.containsJWT(JWT);
+        return databaseService.containsJWT(JWT);
     }
 
     public String getUsernameFromJWT(String JWT){
