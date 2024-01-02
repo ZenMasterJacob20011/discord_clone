@@ -2,6 +2,8 @@ import {loadProfilePage} from "./profilepage.js";
 import {loadServerPage} from "./serverpage.js";
 
 const router = async () => {
+    //if the href is just the server then default the general channel
+    //if the href is the server and channel then add logic for channel navigation
     const href = window.location.pathname.match("\\/\\d+|\\/@me")[0].substring(1);
     if(href === null){
         return;

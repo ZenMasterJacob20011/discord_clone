@@ -154,9 +154,24 @@ function loadServerMembers(serverInfo) {
     }
 }
 
+function ServerChannelsLayout() {
+    return `
+        <div>
+            <button class="btn" data-bs-toggle="collapse" data-bs-target="#channels"></button>
+            <div id="channels"></div>
+        </div>
+    `
+}
+
+function loadServerChannels(serverInfo) {
+    document.getElementById("content-sidebar-mid").innerHTML = ServerChannelsLayout()
+    // for
+}
+
 export async function loadServerPage(server_id) {
     const serverInfo = await getServerInformationByID(server_id)
     document.getElementById("content-sidebar-mid").innerHTML = ``;
+    loadServerChannels(serverInfo);
     document.getElementById("main-content-mid").innerHTML = ``;
     document.getElementById("content-sidebar-top").innerHTML = ServerOptionsMenu(serverInfo);
     document.getElementById("main-content-top").innerHTML = ServerTopBar();
