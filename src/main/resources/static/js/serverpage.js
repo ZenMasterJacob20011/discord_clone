@@ -4,6 +4,7 @@ import {
     loadNameTag, Message, MessageWithProfilePicture
 } from "./util.js"
 import {loadSideServers} from "./serversidebar.js";
+import {navigateTo} from "./route.js";
 
 
 loadNameTag();
@@ -11,9 +12,9 @@ loadSideServers();
 handleCopyInviteLinkButton()
 
 
-async function sendMessage(serverID) {
+async function sendMessage(channelID) {
     const input = document.querySelector("#typedinput").value;
-    const response = await fetch(`http://localhost:8080/server/${serverID}/postmessages`, {
+    const response = await fetch(`http://localhost:8080/server/${channelID}/postmessages`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -33,8 +34,8 @@ async function sendMessage(serverID) {
 }
 
 
-export async function loadMessages(server_id) {
-    fetch(`http://localhost:8080/server/${server_id}/messages`, {
+export async function loadMessages(channelID) {
+    fetch(`http://localhost:8080/server/${channelID}/messages`, {
         method: "GET"
     }).then((response) => {
         if (!response.ok) {
@@ -49,14 +50,12 @@ export async function loadMessages(server_id) {
 }
 
 
-
-
 export function addMessage(jsonData) {
     console.log(jsonData)
     let previousMessageHTML = null
     let previousTimestamp = null
     let previousUsername = null
-    if(document.getElementById("main-content-mid").hasChildNodes()) {
+    if (document.getElementById("main-content-mid").hasChildNodes()) {
         previousMessageHTML = document.getElementById("main-content-mid").lastElementChild;
         previousTimestamp = previousMessageHTML.attributes.getNamedItem("data-timestamp").nodeValue;
         previousUsername = previousMessageHTML.attributes.getNamedItem("data-username").nodeValue;
@@ -68,19 +67,26 @@ export function addMessage(jsonData) {
         return currentDate >= previousDatePlusSeven;
 
     }
-    if (window.location.pathname.match("\\/\\d+|\\/@me")[0].substring(1) == jsonData.serverID) {
-        if(previousMessageHTML===null){
+    const re = /\/\d+/g
+    if (window.location.pathname.match(re)[1] !== undefined && window.location.pathname.match(re)[1].substring(1) == jsonData.channelID) {
+        if (previousMessageHTML === null) {
             document.getElementById("main-content-mid").innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
-        }else if(jsonData.username === previousUsername && !hasSevenMinutesPassed()) {
+        } else if (jsonData.username === previousUsername && !hasSevenMinutesPassed()) {
             document.getElementById("main-content-mid").innerHTML += Message(jsonData.message, jsonData.username, jsonData.postTime);
-        }else{
+        } else {
+            document.getElementById("main-content-mid").innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
+        }
+    } else {
+        // I'm deciding whether or not addMessage should check if it is in the correct server or not. Other methods should probably handle that
+        if (previousMessageHTML === null) {
+            document.getElementById("main-content-mid").innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
+        } else if (jsonData.username === previousUsername && !hasSevenMinutesPassed()) {
+            document.getElementById("main-content-mid").innerHTML += Message(jsonData.message, jsonData.username, jsonData.postTime);
+        } else {
             document.getElementById("main-content-mid").innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
         }
     }
 }
-
-
-
 
 
 function MessageBar() {
@@ -114,7 +120,7 @@ function ServerOptionsMenu(serverInfo) {
     `
 }
 
-function ServerTopBar() {
+function ChannelTopBar() {
     return `
         <div class="h-100 container-fluid d-flex justify-content-between align-items-center">
             <div class="flex-container">
@@ -157,40 +163,87 @@ function loadServerMembers(serverInfo) {
 function ServerChannelsLayout() {
     return `
         <div>
-            <button class="btn" data-bs-toggle="collapse" data-bs-target="#channels"></button>
+            <div class="d-flex justify-content-between">
+                <button class="dropdown p-0" data-bs-toggle="collapse" data-bs-target="#channels">
+                    <svg class="icon" aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M5.3 9.3a1 1 0 0 1 1.4 0l5.3 5.29 5.3-5.3a1 1 0 1 1 1.4 1.42l-6 6a1 1 0 0 1-1.4 0l-6-6a1 1 0 0 1 0-1.42Z" class=""></path></svg>
+                    <span style="background: none; color: rgb(148, 155, 164); font-size: 12px" class="fw-bold">TEXT CHANNELS</span>
+                </button>
+                <button id="createChannelPopupButton" data-bs-target="#createChannelModal" data-bs-toggle="modal">
+                    <svg class="icon" aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M13 6a1 1 0 1 0-2 0v5H6a1 1 0 1 0 0 2h5v5a1 1 0 1 0 2 0v-5h5a1 1 0 1 0 0-2h-5V6Z" class=""></path></svg>
+                </button>
+            </div>
             <div id="channels"></div>
         </div>
     `
 }
 
-function loadServerChannels(serverInfo) {
-    document.getElementById("content-sidebar-mid").innerHTML = ServerChannelsLayout()
-    // for
+function ServerChannel(channelInfo) {
+    const theHTML = `
+        <button class="d-flex justify-content-between p-1 rounded w-100 channel" id="${channelInfo.channelID}">
+            <div>
+                <svg class="icon" aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.99 3.16A1 1 0 1 0 9 2.84L8.15 8H4a1 1 0 0 0 0 2h3.82l-.67 4H3a1 1 0 1 0 0 2h3.82l-.8 4.84a1 1 0 0 0 1.97.32L8.85 16h4.97l-.8 4.84a1 1 0 0 0 1.97.32l.86-5.16H20a1 1 0 1 0 0-2h-3.82l.67-4H21a1 1 0 1 0 0-2h-3.82l.8-4.84a1 1 0 1 0-1.97-.32L15.15 8h-4.97l.8-4.84ZM14.15 14l.67-4H9.85l-.67 4h4.97Z" clip-rule="evenodd" class=""></path></svg>
+                ${channelInfo.channelName}
+            </div>
+            <div>
+                <svg class="icon" aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M19 14a1 1 0 0 1 1 1v3h3a1 1 0 0 1 0 2h-3v3a1 1 0 0 1-2 0v-3h-3a1 1 0 1 1 0-2h3v-3a1 1 0 0 1 1-1Z" fill="currentColor" class=""></path><path d="M16.83 12.93c.26-.27.26-.75-.08-.92A9.5 9.5 0 0 0 12.47 11h-.94A9.53 9.53 0 0 0 2 20.53c0 .81.66 1.47 1.47 1.47h.22c.24 0 .44-.17.5-.4.29-1.12.84-2.17 1.32-2.91.14-.21.43-.1.4.15l-.26 2.61c-.02.3.2.55.5.55h7.64c.12 0 .17-.31.06-.36C12.82 21.14 12 20.22 12 19a3 3 0 0 1 3-3h.5a.5.5 0 0 0 .5-.5V15c0-.8.31-1.53.83-2.07ZM12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" fill="currentColor"></path></svg>
+                <svg class="icon" aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.56 1.1c-.46.05-.7.53-.64.98.18 1.16-.19 2.2-.98 2.53-.8.33-1.79-.15-2.49-1.1-.27-.36-.78-.52-1.14-.24-.77.59-1.45 1.27-2.04 2.04-.28.36-.12.87.24 1.14.96.7 1.43 1.7 1.1 2.49-.33.8-1.37 1.16-2.53.98-.45-.07-.93.18-.99.64a11.1 11.1 0 0 0 0 2.88c.06.46.54.7.99.64 1.16-.18 2.2.19 2.53.98.33.8-.14 1.79-1.1 2.49-.36.27-.52.78-.24 1.14.59.77 1.27 1.45 2.04 2.04.36.28.87.12 1.14-.24.7-.95 1.7-1.43 2.49-1.1.8.33 1.16 1.37.98 2.53-.07.45.18.93.64.99a11.1 11.1 0 0 0 2.88 0c.46-.06.7-.54.64-.99-.18-1.16.19-2.2.98-2.53.8-.33 1.79.14 2.49 1.1.27.36.78.52 1.14.24.77-.59 1.45-1.27 2.04-2.04.28-.36.12-.87-.24-1.14-.96-.7-1.43-1.7-1.1-2.49.33-.8 1.37-1.16 2.53-.98.45.07.93-.18.99-.64a11.1 11.1 0 0 0 0-2.88c-.06-.46-.54-.7-.99-.64-1.16.18-2.2-.19-2.53-.98-.33-.8.14-1.79 1.1-2.49.36-.27.52-.78.24-1.14a11.07 11.07 0 0 0-2.04-2.04c-.36-.28-.87-.12-1.14.24-.7.96-1.7 1.43-2.49 1.1-.8-.33-1.16-1.37-.98-2.53.07-.45-.18-.93-.64-.99a11.1 11.1 0 0 0-2.88 0ZM16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" clip-rule="evenodd"></path></svg>
+            </div>
+        </button>
+    `;
+    return $.parseHTML(theHTML);
 }
 
-export async function loadServerPage(server_id) {
-    const serverInfo = await getServerInformationByID(server_id)
+function loadServerChannels(serverInfo) {
+    document.getElementById("content-sidebar-mid").innerHTML = ServerChannelsLayout();
+    document.getElementById("createChannelButton").onclick = function () {
+        const channelName = document.getElementById("newChannelName").value;
+        if (channelName.length <= 0) {
+            console.log("Channel name cannot be blank")
+        } else {
+            fetch(`http://localhost:8080/server/${serverInfo.serverID}/createchannel`, {
+                method: "POST",
+                body: channelName
+            }).then(r => {
+                console.log(r.text());
+            })
+        }
+    }
+    console.log(serverInfo);
+    const channels = serverInfo.channels;
+    for (let channel of channels) {
+        $(ServerChannel(channel)).appendTo(document.getElementById("channels"));
+        document.getElementById("channels").lastElementChild.addEventListener("click", function () {
+            navigateTo(`${serverInfo.serverID}/${channel.channelID}`);
+        })
+    }
+}
+
+export async function loadServerPage(serverInfo) {
     document.getElementById("content-sidebar-mid").innerHTML = ``;
     loadServerChannels(serverInfo);
-    document.getElementById("main-content-mid").innerHTML = ``;
     document.getElementById("content-sidebar-top").innerHTML = ServerOptionsMenu(serverInfo);
-    document.getElementById("main-content-top").innerHTML = ServerTopBar();
-    loadMessages(server_id)
-    document.getElementById("main-content-bot").innerHTML = MessageBar();
     loadServerMembers(serverInfo);
+}
+
+
+export function loadChannel(channelID) {
+    document.getElementById("main-content-mid").innerHTML = ``;
+    document.getElementById("main-content-top").innerHTML = ChannelTopBar();
+    document.getElementById("main-content-bot").innerHTML = MessageBar();
     document.getElementById("members-button").onclick = function () {
-        let serverMembersBar = document.getElementById("server-members");
-        if (serverMembersBar.style.display === "none") {
-            serverMembersBar.style.display = "";
+        let channelMembersBar = document.getElementById("server-members");
+        if (channelMembersBar.style.display === "none") {
+            channelMembersBar.style.display = "";
         } else {
-            serverMembersBar.style.display = "none";
+            channelMembersBar.style.display = "none";
         }
     }
     document.getElementById("typedinput").addEventListener("keydown", e => {
         if (e.key === 'Enter') {
             if (document.querySelector("#typedinput").value !== "" && document.activeElement === document.getElementById("typedinput")) {
-                sendMessage(server_id);
+                sendMessage(channelID);
             }
         }
     })
+    loadMessages(channelID);
 }
