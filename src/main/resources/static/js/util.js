@@ -1,8 +1,7 @@
-
-
 export const decodedJWTJSON = parseJwt(localStorage.getItem("token"));
 export let jwt = localStorage.getItem("token");
 export let user;
+
 function parseJwt(token) {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -40,12 +39,12 @@ export function SearchBar() {
 export function convertDateTimeToString(dateTime) {
     const dateTimeObject = new Date(dateTime);
     const today = new Date();
-    const yesterday = today.getDay()-1 <= -1 ? 6 : today.getDay()-1;
-    const localTime = dateTimeObject.toLocaleTimeString().substring(0,dateTimeObject.toLocaleTimeString().lastIndexOf(":")) + dateTimeObject.toLocaleTimeString().substring(dateTimeObject.toLocaleTimeString().lastIndexOf(" "));
+    const yesterday = today.getDay() - 1 <= -1 ? 6 : today.getDay() - 1;
+    const localTime = dateTimeObject.toLocaleTimeString().substring(0, dateTimeObject.toLocaleTimeString().lastIndexOf(":")) + dateTimeObject.toLocaleTimeString().substring(dateTimeObject.toLocaleTimeString().lastIndexOf(" "));
     let localDate = dateTimeObject.toLocaleDateString();
-    if(dateTimeObject.getDay() === today.getDay()){
+    if (dateTimeObject.getDay() === today.getDay()) {
         localDate = "Today";
-    }else if(dateTimeObject.getDay() === yesterday){
+    } else if (dateTimeObject.getDay() === yesterday) {
         localDate = "Yesterday";
     }
     return `${localDate} at ${localTime}`
@@ -70,7 +69,7 @@ export function MessageWithProfilePicture(message, username, timestamp) {
                     <time style="font-size: 12px; color: rgb(148, 155, 164); margin-left: 4px" datetime="${timestamp}">${convertDateTimeToString(timestamp)}</time>
                 </span>
             </div>
-            ${Message(message,username,timestamp)}
+            ${Message(message, username, timestamp)}
         </div>
     
     `
@@ -93,6 +92,7 @@ export function Message(message, username, timestamp) {
         </div>
     `
 }
+
 export function inviteFriendToServer(username, serverID) {
 
 }
@@ -106,13 +106,15 @@ export async function loadUsersInfo() {
     })
     user = await response.json();
 }
+
 await loadUsersInfo();
+
 export function loadNameTag() {
     document.getElementById("name").innerText = decodedJWTJSON.sub;
 }
 
-Date.prototype.addMinutes = function(m) {
-    this.setTime(this.getTime() + (m*60*1000));
+Date.prototype.addMinutes = function (m) {
+    this.setTime(this.getTime() + (m * 60 * 1000));
     return this;
 }
 
@@ -122,8 +124,8 @@ export function addErrorMessageToHTML(cssSelector, errorMessage) {
     css.classList.add("text-danger")
 }
 
-export function handleCopyInviteLinkButton(){
-    $("#copy-invite").on("click",function (){
+export function handleCopyInviteLinkButton() {
+    $("#copy-invite").on("click", function () {
         const inviteCode = document.getElementById("inviteCode").innerText;
         navigator.clipboard.writeText(inviteCode);
     });
@@ -154,7 +156,7 @@ export async function getInviteLink(serverID) {
             "authorization": jwt
         }
     }).then(response => {
-        if (response.ok){
+        if (response.ok) {
             return response.json();
         }
         throw Error("Could not get response json for invite link")
@@ -169,21 +171,21 @@ export async function getInviteLink(serverID) {
  * @returns The JSON object containing server information
  */
 export async function getServerInformationByID(server_id) {
-    if (localStorage.getItem(server_id) === null){
-        return fetch(`http://localhost:8080/server/${server_id}/getServerInfo`, {
-            method: "GET"
-        }).then(r => {
-            if (!r.ok){
-                throw Error(`Could not fetch server info with the id ${server_id}`);
-            }
-            return r.json();
-        }).then(serverInfo => {
-            console.log(serverInfo)
-            localStorage.setItem(String(server_id),JSON.stringify(serverInfo));
-            return serverInfo;
-        });
-    }
-    return JSON.parse(localStorage.getItem(server_id));
+    // if (localStorage.getItem(server_id) === null){
+    return fetch(`http://localhost:8080/server/${server_id}/getServerInfo`, {
+        method: "GET"
+    }).then(r => {
+        if (!r.ok) {
+            throw Error(`Could not fetch server info with the id ${server_id}`);
+        }
+        return r.json();
+    }).then(serverInfo => {
+        console.log(serverInfo)
+        localStorage.setItem(String(server_id), JSON.stringify(serverInfo));
+        return serverInfo;
+    });
+    // }
+    // return JSON.parse(localStorage.getItem(server_id));
 
 }
 
@@ -193,7 +195,17 @@ export async function getServerInformationByID(server_id) {
  * @returns {Promise<Response>}
  */
 export function getServerIDWithOnlyThisUserInIt(username) {
-    return fetch(`http://localhost:8080/server/directmessage/${username}`,{
+    return fetch(`http://localhost:8080/server/directmessage/${username}`, {
         method: "GET"
     });
+}
+
+export function getCurrentServerID() {
+    const re = /\/\d+/g
+    return window.location.pathname.match(re)[0].substring(1);
+}
+
+export function getCurrentChannelID() {
+    const re = /\/\d+/g
+    return window.location.pathname.match(re)[1].substring(1);
 }
