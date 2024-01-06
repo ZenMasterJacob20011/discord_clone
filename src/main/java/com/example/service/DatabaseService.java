@@ -138,4 +138,16 @@ public class DatabaseService {
         }
         throw new Exception("Server with ID (" + serverID + ") not found");
     }
+
+    public void createChannel(Integer serverID,String channelName) throws Exception {
+        if (serverRepository.findById(serverID).isPresent()) {
+            Server tempServer = serverRepository.findById(serverID).get();
+            Channel tempChannel = new Channel();
+            tempChannel.setChannelName(channelName);
+            tempChannel.setServer(tempServer);
+            channelRepository.save(tempChannel);
+            return;
+        }
+        throw new Exception("Server with ID (" + serverID + ") not found");
+    }
 }
