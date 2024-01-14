@@ -1,7 +1,8 @@
 import {addMessage} from "./serverpage.js";
-import {getServerInformationByID, user} from "./util.js";
+import {getServerInformationByID, jwt, user} from "./util.js";
 
 let stompClient = null
+let subscribedChannels = [];
 
 function connect() {
     console.log(user);
@@ -12,7 +13,6 @@ function connect() {
         if (user.serverList.length > 0) {
             for (const serverInfo of user.serverList) {
                 getServerInformationByID(serverInfo.serverID).then(serverInfo => {
-                    console.log(serverInfo);
                     for (const channel of serverInfo.channels) {
                         subscribeToChannel(channel.channelID);
                     }
@@ -30,10 +30,14 @@ function disconnect() {
 }
 
 export function subscribeToChannel(channelID) {
+    if (subscribedChannels.includes(channelID)){
+        return;
+    }
     stompClient.subscribe(`/topic/${channelID}`, function (messageJSON) {
         console.log(messageJSON);
         addMessage(JSON.parse(messageJSON.body));
-    });
+    }, {authorization: jwt()});
+    subscribedChannels.push(''+channelID);
 }
 
 connect();
