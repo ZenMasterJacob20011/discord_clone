@@ -28,7 +28,9 @@ function createServerCircle(serverID, serverName) {
 export async function loadSideServers() {
     let servers = user.serverList;
     for (const server of servers) {
-        createServerCircle(server.serverID, server.serverName);
+        if (server.serverName !== "@me") {
+            createServerCircle(server.serverID, server.serverName);
+        }
     }
 }
 
