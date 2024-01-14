@@ -1,8 +1,8 @@
 import {loadProfilePage} from "./profilepage.js";
-import {loadChannel, loadServerPage} from "./serverpage.js";
-import {getServerInformationByID} from "./util.js";
+import {loadProfileChannel, loadServerChannel, loadServerPage} from "./serverpage.js";
+import {getCurrentChannelID, getCurrentServerID, getServerInformationByID} from "./util.js";
 
-let currentServerID = null;
+let lastServerID = null;
 
 
 /**
@@ -11,8 +11,6 @@ let currentServerID = null;
  * @returns {Promise<void>}
  */
 const router = async () => {
-    //if the href is just the server then default the general channel
-    //if the href is the server and channel then add logic for channel navigation
     const re = /\/\d+|\/@me/g
     const href = window.location.pathname.match(re);
     console.log("href: " + href);
@@ -24,23 +22,32 @@ const router = async () => {
         if (href[0].substring(1) === "@me") {
             loadProfilePage();
         } else {
-            const serverID = href[0].substring(1);
+            const serverID = getCurrentServerID();
             const serverInfo = await getServerInformationByID(serverID)
             loadServerPage(serverInfo);
-            loadChannel(serverInfo.channels[0].channelID);
+            loadServerChannel(serverInfo.channels[0].channelID);
         }
     } else if (href.length > 1) {
-        const serverID = href[0].substring(1);
-        const channelID = href[1].substring(1);
-        if (currentServerID == serverID){
-            loadChannel(channelID);
-        }else{
-            const serverInfo = await getServerInformationByID(serverID)
-            loadServerPage(serverInfo);
-            loadChannel(channelID);
+        const serverID = getCurrentServerID();
+        const channelID = getCurrentChannelID();
+        if (serverID === "@me") {
+            if ('' + lastServerID === serverID) {
+                loadProfileChannel(channelID);
+            } else {
+                loadProfilePage();
+                loadProfileChannel(channelID);
+            }
+        } else {
+            if ('' + lastServerID === serverID) {
+                loadServerChannel(channelID);
+            } else {
+                const serverInfo = await getServerInformationByID(serverID)
+                loadServerPage(serverInfo);
+                loadServerChannel(channelID);
+            }
         }
     }
-    currentServerID = href[0].substring(1);
+    lastServerID = href[0].substring(1);
 }
 
 /**
