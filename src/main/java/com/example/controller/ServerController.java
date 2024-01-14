@@ -2,12 +2,13 @@ package com.example.controller;
 
 import com.example.dto.MessageDTO;
 import com.example.dto.ServerDTO;
+import com.example.entity.Channel;
 import com.example.entity.Message;
 import com.example.entity.Server;
 import com.example.entity.User;
-import com.example.service.MapService;
 import com.example.service.DatabaseService;
 import com.example.service.JWTService;
+import com.example.service.MapService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -90,9 +91,8 @@ public class ServerController {
             input.setPostTime(LocalDateTime.now());
             input.setChannel(databaseService.getChannelByChannelID(channelID));
             databaseService.addMessage(input);
-            System.out.println(input.getMessageID());
             MessageDTO messageDTO = mapService.getMessageByMessageID(input.getMessageID());
-            simpMessagingTemplate.convertAndSend("/topic/"+channelID, messageDTO);
+            simpMessagingTemplate.convertAndSend("/topic/" + channelID, messageDTO);
             return ResponseEntity.ok(messageDTO);
         }
         return new ResponseEntity<>("Invalid auth token", HttpStatus.FORBIDDEN);
@@ -111,7 +111,15 @@ public class ServerController {
         return ResponseEntity.ok(channelName + " was created successfully");
     }
 
-    @GetMapping("/{serverPath:\\d+}/{channelPath:\\d+}")
+    @GetMapping("/directmessage/{username}")
+    @ResponseBody
+    public Integer getDirectMessageChannelID(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(value = "username") String userTwo) {
+        String userOne = jwtService.getUsernameFromJWT(authorization);
+        Channel channel = databaseService.getDirectMessageChannelByUsers(userOne, userTwo);
+        return channel.getChannelID();
+    }
+
+    @GetMapping("/{serverPath:\\d+|@me}/{channelPath:\\d+}")
     public String appPathOne() {
         return "applicationpage";
     }
@@ -120,4 +128,7 @@ public class ServerController {
     public String appPathTwo() {
         return "applicationpage";
     }
+
 }
+
+
