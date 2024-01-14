@@ -63,11 +63,7 @@
                 <div class="d-flex justify-content-between w-100 my-1">
                     <div style="color: rgb(242, 243, 245)" id="insertservername">Invite friends to servername server
                     </div>
-                    <svg aria-hidden="true" role="img" class="closeIcon__5bab9" width="24" height="24"
-                         viewBox="0 0 24 24">
-                        <path fill="currentColor"
-                              d="M18.4 4L12 10.4L5.6 4L4 5.6L10.4 12L4 18.4L5.6 20L12 13.6L18.4 20L20 18.4L13.6 12L20 5.6L18.4 4Z"></path>
-                    </svg>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="my-1">
                     <svg width="24" height="24" viewBox="0 0 24 24" class="icon" aria-hidden="true"
@@ -104,15 +100,17 @@
 <!--Create a new server popup-->
 <div class="modal fade" id="addServer" tabindex="-1" aria-labelledby="addServerLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div style="background-color: rgb(49, 51, 56)" class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="addServerLabel">Create a server</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="container">
                     <label class="pb-1 label-default" for="serverName">SERVER NAME</label>
-                    <input class="input-default form-control" type="text" name="servername" id="serverName">
+                    <div class="search-bar-3 rounded">
+                        <input class="search p-2" type="text" name="servername" id="serverName">
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -132,10 +130,7 @@
                         <div>in Text Channels</div>
                     </div>
                     <div>
-                        <svg aria-hidden="true" role="img" class="icon" width="24" height="24" viewBox="0 0 24 24">
-                            <path fill="currentColor"
-                                  d="M18.4 4L12 10.4L5.6 4L4 5.6L10.4 12L4 18.4L5.6 20L12 13.6L18.4 20L20 18.4L13.6 12L20 5.6L18.4 4Z"></path>
-                        </svg>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                 </div>
             </div>
