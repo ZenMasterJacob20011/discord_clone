@@ -190,7 +190,7 @@ li.squircle > button {
     display: flex;
 }
 
-.channel:active {
+.channel:focus {
     background-color: rgba(78, 80, 88, 0.6);
 }
 
@@ -198,6 +198,45 @@ li.squircle > button {
     background-color: rgba(78, 80, 88, 0.3);
 }
 
-#createChannel .icon:hover{
+#createChannel .icon:hover {
     color: rgb(219, 222, 225);
+}
+
+#friendsButton {
+    text-align: start;
+    font-size: 16px;
+}
+
+#friendsButton:focus {
+    background-color: rgba(78, 80, 88, 0.6);
+}
+
+#friendsButton:hover {
+    background-color: rgba(78, 80, 88, 0.3);
+}
+
+#nitroButton {
+    text-align: start;
+    font-size: 16px;
+}
+
+#nitroButton:focus{
+    background-color: rgba(78, 80, 88, 0.6);
+}
+
+#nitroButton:hover {
+    background-color: rgba(78, 80, 88, 0.3);
+}
+
+#messageRequestsButton {
+    text-align: start;
+    font-size: 16px;
+}
+
+#messageRequestsButton:focus{
+    background-color: rgba(78, 80, 88, 0.6);
+}
+
+#messageRequestsButton:hover {
+    background-color: rgba(78, 80, 88, 0.3);
 }
