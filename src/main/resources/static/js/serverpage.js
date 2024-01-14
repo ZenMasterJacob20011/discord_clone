@@ -1,6 +1,7 @@
 import {
+    getCurrentChannelID,
     getServerInformationByID,
-    handleCopyInviteLinkButton,
+    handleCopyInviteLinkButton, jwt,
     loadNameTag, Message, MessageWithProfilePicture
 } from "./util.js"
 import {loadSideServers} from "./serversidebar.js";
@@ -19,7 +20,7 @@ async function sendMessage(channelID) {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': localStorage.getItem("token")
+            'Authorization': jwt()
         },
         body: JSON.stringify({
                 'message': input
@@ -42,16 +43,15 @@ export async function loadMessages(channelID) {
             throw new Error("Could not get server messages")
         }
         return response.json();
-    }).then((messages) => {
+    }).then(async (messages) => {
         for (const message of messages) {
-            addMessage(message);
+            await addMessage(message);
         }
     });
 }
 
 
-export function addMessage(jsonData) {
-    console.log(jsonData)
+export async function addMessage(jsonData) {
     let previousMessageHTML = null
     let previousTimestamp = null
     let previousUsername = null
@@ -60,7 +60,6 @@ export function addMessage(jsonData) {
         previousTimestamp = previousMessageHTML.attributes.getNamedItem("data-timestamp").nodeValue;
         previousUsername = previousMessageHTML.attributes.getNamedItem("data-username").nodeValue;
     }
-    console.log(previousMessageHTML);
     const hasSevenMinutesPassed = () => {
         const previousDatePlusSeven = new Date(previousTimestamp).addMinutes(7);
         const currentDate = new Date(jsonData.postTime);
@@ -68,16 +67,7 @@ export function addMessage(jsonData) {
 
     }
     const re = /\/\d+/g
-    if (window.location.pathname.match(re)[1] !== undefined && window.location.pathname.match(re)[1].substring(1) == jsonData.channelID) {
-        if (previousMessageHTML === null) {
-            document.getElementById("main-content-mid").innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
-        } else if (jsonData.username === previousUsername && !hasSevenMinutesPassed()) {
-            document.getElementById("main-content-mid").innerHTML += Message(jsonData.message, jsonData.username, jsonData.postTime);
-        } else {
-            document.getElementById("main-content-mid").innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
-        }
-    } else {
-        // I'm deciding whether or not addMessage should check if it is in the correct server or not. Other methods should probably handle that
+    if (await getCurrentChannelID() === jsonData.channelID) {
         if (previousMessageHTML === null) {
             document.getElementById("main-content-mid").innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
         } else if (jsonData.username === previousUsername && !hasSevenMinutesPassed()) {
@@ -226,7 +216,7 @@ export async function loadServerPage(serverInfo) {
 }
 
 
-export function loadChannel(channelID) {
+export function loadServerChannel(channelID) {
     document.getElementById("main-content-mid").innerHTML = ``;
     document.getElementById("main-content-top").innerHTML = ChannelTopBar();
     document.getElementById("main-content-bot").innerHTML = MessageBar();
@@ -238,6 +228,20 @@ export function loadChannel(channelID) {
             channelMembersBar.style.display = "none";
         }
     }
+    document.getElementById("typedinput").addEventListener("keydown", e => {
+        if (e.key === 'Enter') {
+            if (document.querySelector("#typedinput").value !== "" && document.activeElement === document.getElementById("typedinput")) {
+                sendMessage(channelID);
+            }
+        }
+    })
+    loadMessages(channelID);
+}
+
+export function loadProfileChannel(channelID) {
+    document.getElementById("main-content-mid").innerHTML = ``;
+    document.getElementById("main-content-top").innerHTML = ChannelTopBar();
+    document.getElementById("main-content-bot").innerHTML = MessageBar();
     document.getElementById("typedinput").addEventListener("keydown", e => {
         if (e.key === 'Enter') {
             if (document.querySelector("#typedinput").value !== "" && document.activeElement === document.getElementById("typedinput")) {
