@@ -7,11 +7,14 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends CrudRepository<User,Integer> {
-    User findPersonIdentifierByUsername(String username);
+public interface UserRepository extends CrudRepository<User, Integer> {
+    User getUserByUsername(String username);
 
-    Optional<User> findPersonIdentifierByJWT(String JWT);
+    Optional<User> findUserByJWT(String JWT);
+
     boolean existsByUsernameAndPassword(String username, String password);
+
     boolean existsByUsername(String username);
+
     boolean existsByJWT(String JWT);
 }
