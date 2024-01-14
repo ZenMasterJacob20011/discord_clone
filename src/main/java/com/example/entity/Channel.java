@@ -17,7 +17,7 @@ public class Channel {
     @ManyToOne(cascade = CascadeType.ALL)
     private Server server;
 
-    @OneToMany(mappedBy = "channel")
+    @OneToMany(mappedBy = "channel", fetch = FetchType.EAGER)
     private List<Message> messages;
 
     public Channel(){
@@ -58,4 +58,13 @@ public class Channel {
         this.messages = message;
     }
 
+    @Override
+    public String toString() {
+        return "Channel{" +
+                "channelID=" + channelID +
+                ", channelName='" + channelName + '\'' +
+                ", server=" + server +
+                ", messages=" + messages +
+                '}';
+    }
 }
