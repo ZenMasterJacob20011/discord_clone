@@ -1,5 +1,10 @@
-export const decodedJWTJSON = parseJwt(localStorage.getItem("token"));
-export let jwt = localStorage.getItem("token");
+export let jwt = () => {
+    if (localStorage.getItem("token")) {
+        return localStorage.getItem("token");
+    }
+    window.location.href = "http://localhost:8080/login";
+};
+export const decodedJWTJSON = parseJwt(jwt());
 export let user;
 
 function parseJwt(token) {
@@ -55,7 +60,7 @@ export function convertDateTimeToString(dateTime) {
  * @param message {string} the message
  * @param username {string} user who sent the message
  * @param timestamp {string} the time the message was sent
- * @returns {string} the html
+ * @returns the html
  */
 export function MessageWithProfilePicture(message, username, timestamp) {
     return `
@@ -71,8 +76,7 @@ export function MessageWithProfilePicture(message, username, timestamp) {
             </div>
             ${Message(message, username, timestamp)}
         </div>
-    
-    `
+    `;
 }
 
 /**
@@ -80,8 +84,7 @@ export function MessageWithProfilePicture(message, username, timestamp) {
  * @param message {string} the message to be displayed
  * @param username {string} the username stored in data-username attribute
  * @param timestamp {string} the timestamp stored in data-timestamp attribute
- * @returns {string} the html
- * @constructor
+ * @returns the html
  */
 export function Message(message, username, timestamp) {
     return `
@@ -90,7 +93,7 @@ export function Message(message, username, timestamp) {
                 ${message}
             </span>
         </div>
-    `
+    `;
 }
 
 export function inviteFriendToServer(username, serverID) {
@@ -101,7 +104,7 @@ export async function loadUsersInfo() {
     const response = await fetch('http://localhost:8080/user/getUserInfo', {
         method: "GET",
         headers: {
-            "Authorization": jwt
+            "Authorization": jwt()
         }
     })
     user = await response.json();
@@ -153,7 +156,7 @@ export async function getInviteLink(serverID) {
         method: "GET",
         headers: {
             "content-type": "application/json",
-            "authorization": jwt
+            "authorization": jwt()
         }
     }).then(response => {
         if (response.ok) {
@@ -180,8 +183,7 @@ export async function getServerInformationByID(server_id) {
         }
         return r.json();
     }).then(serverInfo => {
-        console.log(serverInfo)
-        localStorage.setItem(String(server_id), JSON.stringify(serverInfo));
+        // localStorage.setItem(String(server_id), JSON.stringify(serverInfo));
         return serverInfo;
     });
     // }
@@ -194,18 +196,28 @@ export async function getServerInformationByID(server_id) {
  * @param username
  * @returns {Promise<Response>}
  */
-export function getServerIDWithOnlyThisUserInIt(username) {
+export function getDirectMessageChannelID(username) {
     return fetch(`http://localhost:8080/server/directmessage/${username}`, {
-        method: "GET"
+        method: "GET",
+        headers: {
+            "authorization": jwt()
+        }
+    }).then(r => {
+        return r.json();
     });
 }
 
 export function getCurrentServerID() {
-    const re = /\/\d+/g
+    const re = /\/\d+|\/@me/g
     return window.location.pathname.match(re)[0].substring(1);
 }
 
 export function getCurrentChannelID() {
-    const re = /\/\d+/g
-    return window.location.pathname.match(re)[1].substring(1);
+    const re = /\/\d+|@me/g
+    if (window.location.pathname.match(re)[1] === undefined) {
+        return getServerInformationByID(getCurrentServerID()).then(serverInfo => {
+            return serverInfo.channels[0].channelID;
+        })
+    }
+    return Number(window.location.pathname.match(re)[1].substring(1));
 }
