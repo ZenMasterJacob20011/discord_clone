@@ -1,23 +1,61 @@
 import {loadProfilePage} from "./profilepage.js";
-import {loadServerPage} from "./serverpage.js";
+import {loadProfileChannel, loadServerChannel, loadServerPage} from "./serverpage.js";
+import {getCurrentChannelID, getCurrentServerID, getServerInformationByID} from "./util.js";
 
+let lastServerID = null;
+
+
+/**
+ * This will update the page accordingly to the current href in the browsers' path. Ideally it is not to be used directly
+ * but instead to be used within another function
+ * @returns {Promise<void>}
+ */
 const router = async () => {
-    //if the href is just the server then default the general channel
-    //if the href is the server and channel then add logic for channel navigation
-    const href = window.location.pathname.match("\\/\\d+|\\/@me")[0].substring(1);
-    if(href === null){
+    const re = /\/\d+|\/@me/g
+    const href = window.location.pathname.match(re);
+    console.log("href: " + href);
+    if (href === null) {
         return;
     }
     console.log(href)
-    if(href === "@me"){
-        loadProfilePage();
-    }else{
-        loadServerPage(href);
+    if (href.length === 1) {
+        if (href[0].substring(1) === "@me") {
+            loadProfilePage();
+        } else {
+            const serverID = getCurrentServerID();
+            const serverInfo = await getServerInformationByID(serverID)
+            loadServerPage(serverInfo);
+            loadServerChannel(serverInfo.channels[0].channelID);
+        }
+    } else if (href.length > 1) {
+        const serverID = getCurrentServerID();
+        const channelID = getCurrentChannelID();
+        if (serverID === "@me") {
+            if ('' + lastServerID === serverID) {
+                loadProfileChannel(channelID);
+            } else {
+                loadProfilePage();
+                loadProfileChannel(channelID);
+            }
+        } else {
+            if ('' + lastServerID === serverID) {
+                loadServerChannel(channelID);
+            } else {
+                const serverInfo = await getServerInformationByID(serverID)
+                loadServerPage(serverInfo);
+                loadServerChannel(channelID);
+            }
+        }
     }
+    lastServerID = href[0].substring(1);
 }
 
+/**
+ * used to navigate to another page. will push the state of the page to the history api for forward and backward traversal
+ * @param href {String} the page to navigate to
+ */
 export function navigateTo(href) {
-    history.pushState(null, null, `${href}`);
+    history.pushState(null, null, `http://localhost:8080/server/${href}`);
     router();
 }
 

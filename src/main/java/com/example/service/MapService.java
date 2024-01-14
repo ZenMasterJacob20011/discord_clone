@@ -30,8 +30,8 @@ public class MapService {
     private MessageRepository messageRepository;
 
     public UserDTO getUserByJwt(String JWT) throws Exception {
-        if (userRepository.findPersonIdentifierByJWT(JWT).isPresent()) {
-            return convertPersonIdentifierToDTO(userRepository.findPersonIdentifierByJWT(JWT).get());
+        if (userRepository.findUserByJWT(JWT).isPresent()) {
+            return convertPersonIdentifierToDTO(userRepository.findUserByJWT(JWT).get());
         }
         throw new Exception("Could not find user with JWT: " + JWT);
     }

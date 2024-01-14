@@ -6,6 +6,7 @@ import {
     loadUsersInfo,
     user
 } from "./util.js";
+import {subscribeToChannel} from "./websocket.js";
 
 function ServerCircle(serverID, serverName) {
     return `
@@ -27,7 +28,9 @@ function createServerCircle(serverID, serverName) {
 export async function loadSideServers() {
     let servers = user.serverList;
     for (const server of servers) {
-        createServerCircle(server.serverID, server.serverName);
+        if (server.serverName !== "@me") {
+            createServerCircle(server.serverID, server.serverName);
+        }
     }
 }
 
@@ -55,6 +58,7 @@ function handleContextMenu() {
         getInviteLink(curServerID).then(responseJSON => {
             $contextMenu.hide();
             $("#insertservername").text(`Invite friends to ${serverInfo.serverName} server`);
+
             function createInviteFriendButtonBars() {
                 getServerInformationByID(curServerID).then(server => {
                     function createInviteFriendButtonBar(user) {
@@ -74,11 +78,12 @@ function handleContextMenu() {
                             `
                         );
                         document.getElementsByClassName("invite-button")
-                            .item(document.getElementsByClassName("invite-button").length-1)
-                            .addEventListener("click",function () {
+                            .item(document.getElementsByClassName("invite-button").length - 1)
+                            .addEventListener("click", function () {
                                 inviteFriendToServer(user.username, server.id);
                             })
                     }
+
                     document.getElementById("invite-friends-list").innerHTML = "";
                     user.acceptedFriends.forEach(createInviteFriendButtonBar)
                 })
@@ -86,7 +91,7 @@ function handleContextMenu() {
             }
 
             createInviteFriendButtonBars()
-            let inviteCode = responseJSON.invites[responseJSON.invites.length-1].inviteCode;
+            let inviteCode = responseJSON.invites[responseJSON.invites.length - 1].inviteCode;
             $("#inviteCode").text(`http://localhost:8080/invite/${inviteCode}`);
         });
     })
@@ -117,6 +122,11 @@ export async function createServer() {
     createServerCircle(json.serverID, serverName);
     await addServerToUser(localStorage.getItem("token"), json.serverID);
     await loadUsersInfo();
+    console.log(user);
+    getServerInformationByID(json.serverID).then(serverInfo => {
+        console.log(serverInfo);
+        subscribeToChannel(serverInfo.channels[0].channelID);
+    })
 }
 
 document.getElementById("createServerButton").onclick = function () {

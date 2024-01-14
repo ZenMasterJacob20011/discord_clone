@@ -69,4 +69,8 @@ public class Server {
     public void setInvites(List<Invite> invites) {
         this.invites = invites;
     }
+
+    public void addUserToServer(User u){
+        getUsers().add(u);
+    }
 }

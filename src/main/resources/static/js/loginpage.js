@@ -15,10 +15,7 @@ async function verifyUser() {
     if (response.ok) {
         localStorage.setItem("token", token);
         navigateToUserPage();
-        // window.location.href = "http://localhost:8080/login";
     } else {
-        //add login or password is invalid text to username part also change the text to red
-        //add login or password is invalid to password part
         const invalidUsername = document.querySelector("label[for='username']")
         invalidUsername.innerText = "Username - login or password is invalid";
         invalidUsername.classList.add("text-danger")

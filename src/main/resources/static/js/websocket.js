@@ -1,17 +1,24 @@
 import {addMessage} from "./serverpage.js";
+import {getServerInformationByID, jwt, user} from "./util.js";
 
 let stompClient = null
+let subscribedChannels = [];
 
 function connect() {
+    console.log(user);
     let socket = new SockJS('/gs-guide-websocket');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
-        // setConnected(true);
         console.log('Connected: ' + frame);
-        stompClient.subscribe('/topic/chat', function (messageJSON) {
-            console.log("I just ran")
-            addMessage(JSON.parse(messageJSON.body));
-        });
+        if (user.serverList.length > 0) {
+            for (const serverInfo of user.serverList) {
+                getServerInformationByID(serverInfo.serverID).then(serverInfo => {
+                    for (const channel of serverInfo.channels) {
+                        subscribeToChannel(channel.channelID);
+                    }
+                });
+            }
+        }
     });
 }
 
@@ -22,6 +29,16 @@ function disconnect() {
     console.log("Disconnected");
 }
 
+export function subscribeToChannel(channelID) {
+    if (subscribedChannels.includes(channelID)){
+        return;
+    }
+    stompClient.subscribe(`/topic/${channelID}`, function (messageJSON) {
+        console.log(messageJSON);
+        addMessage(JSON.parse(messageJSON.body));
+    }, {authorization: jwt()});
+    subscribedChannels.push(''+channelID);
+}
 
 connect();
 
