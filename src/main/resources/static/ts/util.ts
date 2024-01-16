@@ -4,7 +4,7 @@ export let jwt = () => {
     }
     window.location.href = "http://localhost:8080/login";
 };
-export const decodedJWTJSON: string = parseJwt(<string>jwt());
+export const decodedJWTJSON: {sub: string} = parseJwt(<string>jwt());
 export let user: {userID: number, username: string, serverList: any, acceptedFriends: any, pendingFriends: any};
 
 function parseJwt(token: string) {
@@ -116,7 +116,7 @@ await loadUsersInfo();
 export function loadNameTag() {
     const nameElement = document.getElementById("name")
     if(nameElement) {
-        nameElement.innerText = `<sub>${decodedJWTJSON}</sub>`
+        nameElement.innerText = decodedJWTJSON.sub
     }
 }
 
