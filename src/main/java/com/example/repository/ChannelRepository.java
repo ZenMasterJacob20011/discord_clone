@@ -15,9 +15,9 @@ public interface ChannelRepository extends CrudRepository<Channel, Integer> {
     Optional<List<Channel>> findChannelsByJWT(@Param("JWT") String JWT);
 
     @Query(value = """
-                select c
-                from Server s JOIN Channel c on s.serverID = c.server.serverID JOIN User u1 JOIN User u2
-                where s.serverName='@me' and u1.username=:userOne and u2.username=:userTwo
-            """)
+                SELECT c.*
+                FROM user u join user_server us on u.userid=us.users_userid join server s on s.serverid=us.servers_serverid Join (user u2 join user_server us2 on u2.userid=us2.users_userid join server s2 on s2.serverid=us2.servers_serverid) on s.serverid=s2.serverid join channel c on c.server_serverid=s.serverid
+                where (u.username=:userOne and u2.username=:userTwo) and s.server_name='@me'
+            """,nativeQuery = true)
     Optional<Channel> findDirectMessageChannelByUsers(@Param("userOne") String userOne, @Param("userTwo") String userTwo);
 }
