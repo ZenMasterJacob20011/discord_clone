@@ -19,7 +19,7 @@ public class Server {
     @OneToMany(mappedBy = "server",cascade = CascadeType.ALL)
     private List<Channel> channels;
 
-    @ManyToMany(mappedBy = "serverList")
+    @ManyToMany(mappedBy = "servers")
     private List<User> users;
 
     @OneToMany(mappedBy = "server", cascade = CascadeType.ALL)
