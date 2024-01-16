@@ -13,7 +13,7 @@ handleCopyInviteLinkButton()
 
 
 async function sendMessage(channelID: number) {
-    const input = (<HTMLInputElement>document.getElementById("#typedinput")).value;
+    const input = (<HTMLInputElement>document.getElementById("typedinput")).value;
     const response = await fetch(`http://localhost:8080/server/${channelID}/postmessages`, {
         method: 'POST',
         headers: {
@@ -26,7 +26,7 @@ async function sendMessage(channelID: number) {
             }
         )
     });
-    (<HTMLInputElement>document.getElementById("#typedinput")).value = '';
+    (<HTMLInputElement>document.getElementById("typedinput")).value = '';
     console.log(response.status);
     if (response.status === 403) {
         window.location.href = "http://localhost:8080";
