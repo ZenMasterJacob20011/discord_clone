@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "CommonJS",
+    "strict": true,
+    "alwaysStrict": true,
+    "removeComments": true,
+    "sourceMap": true,
+    "outDir": "../js",
+    "lib": [
+      "ES2023",
+      "dom"
+    ]
+  }
+}
