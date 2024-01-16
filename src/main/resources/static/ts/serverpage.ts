@@ -1,6 +1,5 @@
 import {
     getCurrentChannelID,
-    getServerInformationByID,
     handleCopyInviteLinkButton, jwt,
     loadNameTag, Message, MessageWithProfilePicture
 } from "./util.js"
@@ -13,21 +12,21 @@ loadSideServers();
 handleCopyInviteLinkButton()
 
 
-async function sendMessage(channelID) {
-    const input = document.querySelector("#typedinput").value;
+async function sendMessage(channelID: number) {
+    const input = (<HTMLInputElement>document.getElementById("typedinput")).value;
     const response = await fetch(`http://localhost:8080/server/${channelID}/postmessages`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': jwt()
+            'Authorization': <string>jwt()
         },
         body: JSON.stringify({
                 'message': input
             }
         )
     });
-    document.querySelector("#typedinput").value = '';
+    (<HTMLInputElement>document.getElementById("typedinput")).value = '';
     console.log(response.status);
     if (response.status === 403) {
         window.location.href = "http://localhost:8080";
@@ -35,7 +34,7 @@ async function sendMessage(channelID) {
 }
 
 
-export async function loadMessages(channelID) {
+export async function loadMessages(channelID: number) {
     fetch(`http://localhost:8080/server/${channelID}/messages`, {
         method: "GET"
     }).then((response) => {
@@ -51,29 +50,29 @@ export async function loadMessages(channelID) {
 }
 
 
-export async function addMessage(jsonData) {
-    let previousMessageHTML = null
-    let previousTimestamp = null
-    let previousUsername = null
-    if (document.getElementById("main-content-mid").hasChildNodes()) {
-        previousMessageHTML = document.getElementById("main-content-mid").lastElementChild;
-        previousTimestamp = previousMessageHTML.attributes.getNamedItem("data-timestamp").nodeValue;
-        previousUsername = previousMessageHTML.attributes.getNamedItem("data-username").nodeValue;
+export async function addMessage(jsonData: { message: string, username: string, postTime: string, channelID: number }) {
+    let previousMessageHTML: Element | null = null
+    let previousTimestamp: string | null = null
+    let previousUsername: string | null = null
+    if (document.getElementById("main-content-mid")!.hasChildNodes()) {
+        previousMessageHTML = document.getElementById("main-content-mid")!.lastElementChild;
+        previousTimestamp = previousMessageHTML!.attributes.getNamedItem("data-timestamp")!.nodeValue;
+        previousUsername = previousMessageHTML!.attributes.getNamedItem("data-username")!.nodeValue;
     }
     const hasSevenMinutesPassed = () => {
-        const previousDatePlusSeven = new Date(previousTimestamp).addMinutes(7);
+        // @ts-ignore
+        const previousDatePlusSeven = new Date(<string>previousTimestamp).addMinutes(7);
         const currentDate = new Date(jsonData.postTime);
         return currentDate >= previousDatePlusSeven;
 
     }
-    const re = /\/\d+/g
     if (await getCurrentChannelID() === jsonData.channelID) {
         if (previousMessageHTML === null) {
-            document.getElementById("main-content-mid").innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
+            document.getElementById("main-content-mid")!.innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
         } else if (jsonData.username === previousUsername && !hasSevenMinutesPassed()) {
-            document.getElementById("main-content-mid").innerHTML += Message(jsonData.message, jsonData.username, jsonData.postTime);
+            document.getElementById("main-content-mid")!.innerHTML += Message(jsonData.message, jsonData.username, jsonData.postTime);
         } else {
-            document.getElementById("main-content-mid").innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
+            document.getElementById("main-content-mid")!.innerHTML += MessageWithProfilePicture(jsonData.message, jsonData.username, jsonData.postTime);
         }
     }
 }
@@ -85,7 +84,7 @@ function MessageBar() {
     `
 }
 
-function UserForServerMemberSidebar(username) {
+function UserForServerMemberSidebar(username: string) {
     return `
         <div style="height: 44px" class="d-flex justify-content-start align-items-center">
             <div class="profile-image"></div>
@@ -95,7 +94,7 @@ function UserForServerMemberSidebar(username) {
 }
 
 
-function ServerOptionsMenu(serverInfo) {
+function ServerOptionsMenu(serverInfo: {serverName: string}) {
     return `
         <div class="dropdown" style="width: 100%">
             <button id="serverNameButton" class="btn w-100 dropdown-toggle p-0" type="button" data-bs-toggle="dropdown" style="height: 48px">
@@ -140,13 +139,13 @@ function ChannelTopBar() {
 }
 
 
-function loadServerMembers(serverInfo) {
+function loadServerMembers(serverInfo: {users: any}) {
     const serverMembers = serverInfo.users;
     console.log(serverMembers)
     const membersGroup = document.getElementById("members-group")
-    membersGroup.innerHTML = ``;
+    membersGroup!.innerHTML = ``;
     for (const serverMember of serverMembers) {
-        membersGroup.innerHTML += UserForServerMemberSidebar(serverMember.username);
+        membersGroup!.innerHTML += UserForServerMemberSidebar(serverMember.username);
     }
 }
 
@@ -167,7 +166,7 @@ function ServerChannelsLayout() {
     `
 }
 
-function ServerChannel(channelInfo) {
+function ServerChannel(channelInfo: {channelID: number, channelName: string}) {
     const theHTML = `
         <button class="d-flex justify-content-between p-1 rounded w-100 channel" id="${channelInfo.channelID}">
             <div>
@@ -180,13 +179,14 @@ function ServerChannel(channelInfo) {
             </div>
         </button>
     `;
+    // @ts-ignore
     return $.parseHTML(theHTML);
 }
 
-function loadServerChannels(serverInfo) {
-    document.getElementById("content-sidebar-mid").innerHTML = ServerChannelsLayout();
-    document.getElementById("createChannelButton").onclick = function () {
-        const channelName = document.getElementById("newChannelName").value;
+function loadServerChannels(serverInfo: {serverID: number, channels: any}) {
+    document.getElementById("content-sidebar-mid")!.innerHTML = ServerChannelsLayout();
+    document.getElementById("createChannelButton")!.onclick = function () {
+        const channelName = (<HTMLInputElement>document.getElementById("newChannelName")).value;
         if (channelName.length <= 0) {
             console.log("Channel name cannot be blank")
         } else {
@@ -201,36 +201,37 @@ function loadServerChannels(serverInfo) {
     console.log(serverInfo);
     const channels = serverInfo.channels;
     for (let channel of channels) {
+        // @ts-ignore
         $(ServerChannel(channel)).appendTo(document.getElementById("channels"));
-        document.getElementById("channels").lastElementChild.addEventListener("click", function () {
+        document.getElementById("channels")!.lastElementChild!.addEventListener("click", function () {
             navigateTo(`${serverInfo.serverID}/${channel.channelID}`);
         })
     }
 }
 
-export async function loadServerPage(serverInfo) {
-    document.getElementById("content-sidebar-mid").innerHTML = ``;
+export async function loadServerPage(serverInfo: {serverID: number, serverName: string,channels: any, users: any}) {
+    document.getElementById("content-sidebar-mid")!.innerHTML = ``;
     loadServerChannels(serverInfo);
-    document.getElementById("content-sidebar-top").innerHTML = ServerOptionsMenu(serverInfo);
+    document.getElementById("content-sidebar-top")!.innerHTML = ServerOptionsMenu(serverInfo);
     loadServerMembers(serverInfo);
 }
 
 
-export function loadServerChannel(channelID) {
-    document.getElementById("main-content-mid").innerHTML = ``;
-    document.getElementById("main-content-top").innerHTML = ChannelTopBar();
-    document.getElementById("main-content-bot").innerHTML = MessageBar();
-    document.getElementById("members-button").onclick = function () {
-        let channelMembersBar = document.getElementById("server-members");
+export function loadServerChannel(channelID: number) {
+    document.getElementById("main-content-mid")!.innerHTML = ``;
+    document.getElementById("main-content-top")!.innerHTML = ChannelTopBar();
+    document.getElementById("main-content-bot")!.innerHTML = MessageBar();
+    document.getElementById("members-button")!.onclick = function () {
+        let channelMembersBar: HTMLElement = document.getElementById("server-members")!;
         if (channelMembersBar.style.display === "none") {
             channelMembersBar.style.display = "";
         } else {
             channelMembersBar.style.display = "none";
         }
     }
-    document.getElementById("typedinput").addEventListener("keydown", e => {
+    document.getElementById("typedinput")!.addEventListener("keydown", e => {
         if (e.key === 'Enter') {
-            if (document.querySelector("#typedinput").value !== "" && document.activeElement === document.getElementById("typedinput")) {
+            if ((<HTMLInputElement>document.getElementById("typedinput")).value !== "" && document.activeElement === document.getElementById("typedinput")) {
                 sendMessage(channelID);
             }
         }
@@ -238,13 +239,13 @@ export function loadServerChannel(channelID) {
     loadMessages(channelID);
 }
 
-export function loadProfileChannel(channelID) {
-    document.getElementById("main-content-mid").innerHTML = ``;
-    document.getElementById("main-content-top").innerHTML = ChannelTopBar();
-    document.getElementById("main-content-bot").innerHTML = MessageBar();
-    document.getElementById("typedinput").addEventListener("keydown", e => {
+export function loadProfileChannel(channelID: number) {
+    document.getElementById("main-content-mid")!.innerHTML = ``;
+    document.getElementById("main-content-top")!.innerHTML = ChannelTopBar();
+    document.getElementById("main-content-bot")!.innerHTML = MessageBar();
+    document.getElementById("typedinput")!.addEventListener("keydown", e => {
         if (e.key === 'Enter') {
-            if (document.querySelector("#typedinput").value !== "" && document.activeElement === document.getElementById("typedinput")) {
+            if ((<HTMLInputElement>document.getElementById("typedinput")).value !== "" && document.activeElement === document.getElementById("typedinput")) {
                 sendMessage(channelID);
             }
         }

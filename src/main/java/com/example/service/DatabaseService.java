@@ -94,7 +94,7 @@ public class DatabaseService {
     public void addServerToUser(Integer serverID, String userName) throws Exception {
         Server server = findServerByServerID(serverID).get();
         User user = getUser(userName);
-        if (user.getServerList().contains(server)) {
+        if (user.getServers().contains(server)) {
             throw new Exception(userName + " is already a member of " + server.getServerName());
         }
         user.addServer(server);

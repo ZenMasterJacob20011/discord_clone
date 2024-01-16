@@ -8,7 +8,7 @@ import {
 } from "./util.js";
 import {subscribeToChannel} from "./websocket.js";
 
-function ServerCircle(serverID, serverName) {
+function ServerCircle(serverID: number, serverName: string) {
     return `
         <li class="squircle">
             <button id="${serverID}" data-link>${serverName.substring(0, 2)}</button>
@@ -16,11 +16,11 @@ function ServerCircle(serverID, serverName) {
     `
 }
 
-function insertServerCircleIntoSideBar(squircle) {
-    document.getElementById("user-server-divider").insertAdjacentHTML("afterend", squircle);
+function insertServerCircleIntoSideBar(squircle: string) {
+    document.getElementById("user-server-divider")!.insertAdjacentHTML("afterend", squircle);
 }
 
-function createServerCircle(serverID, serverName) {
+function createServerCircle(serverID: number, serverName: string) {
     let squircle = ServerCircle(serverID, serverName);
     insertServerCircleIntoSideBar(squircle);
 }
@@ -35,12 +35,14 @@ export async function loadSideServers() {
 }
 
 function handleContextMenu() {
+    // @ts-ignore
     let $contextMenu = $("#contextMenu");
-    let curServerID;
-    let serverInfo;
-    $("body").on("contextmenu", "[data-link]", function (e) {
+    let curServerID: string;
+    let serverInfo: {serverName: string};
+    // @ts-ignore
+    $("body").on("contextmenu", "[data-link]", function (e: MouseEvent) {
         console.log(e);
-        if (e.target.id === "@me") {
+        if ((<HTMLElement>e.target).id === "@me") {
             return false;
         }
         $contextMenu.css({
@@ -48,8 +50,8 @@ function handleContextMenu() {
             left: e.pageX,
             top: e.pageY
         });
-        curServerID = e.currentTarget.id;
-        getServerInformationByID(curServerID).then(r => {
+        curServerID = (<HTMLElement>e.currentTarget).id;
+        getServerInformationByID(Number(curServerID)).then(r => {
             serverInfo = r;
         });
         return false;
@@ -57,12 +59,13 @@ function handleContextMenu() {
     $contextMenu.on("click", "#invite-people", function () {
         getInviteLink(curServerID).then(responseJSON => {
             $contextMenu.hide();
+            // @ts-ignore
             $("#insertservername").text(`Invite friends to ${serverInfo.serverName} server`);
 
             function createInviteFriendButtonBars() {
-                getServerInformationByID(curServerID).then(server => {
-                    function createInviteFriendButtonBar(user) {
-                        document.getElementById("invite-friends-list").insertAdjacentHTML("beforeend",
+                getServerInformationByID(Number(curServerID)).then(server => {
+                    function createInviteFriendButtonBar(user: {username: string}) {
+                        document.getElementById("invite-friends-list")!.insertAdjacentHTML("beforeend",
                             `
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
@@ -77,14 +80,14 @@ function handleContextMenu() {
                             </div>
                             `
                         );
-                        document.getElementsByClassName("invite-button")
-                            .item(document.getElementsByClassName("invite-button").length - 1)
+                        document.getElementsByClassName("invite-button")!
+                            .item(document.getElementsByClassName("invite-button").length - 1)!
                             .addEventListener("click", function () {
                                 inviteFriendToServer(user.username, server.id);
                             })
                     }
 
-                    document.getElementById("invite-friends-list").innerHTML = "";
+                    document.getElementById("invite-friends-list")!.innerHTML = "";
                     user.acceptedFriends.forEach(createInviteFriendButtonBar)
                 })
                 document.getElementById("invite-friends-list")
@@ -92,10 +95,13 @@ function handleContextMenu() {
 
             createInviteFriendButtonBars()
             let inviteCode = responseJSON.invites[responseJSON.invites.length - 1].inviteCode;
+            // @ts-ignore
             $("#inviteCode").text(`http://localhost:8080/invite/${inviteCode}`);
         });
     })
+    // @ts-ignore
     $('body').click(function () {
+        // @ts-ignore
         $($contextMenu).hide();
     })
 }
@@ -103,7 +109,7 @@ function handleContextMenu() {
 handleContextMenu();
 
 export async function createServer() {
-    let serverName = document.getElementById("serverName").value;
+    let serverName = (<HTMLInputElement>document.getElementById("serverName")).value;
     let response = await fetch("http://localhost:8080/server/createserver", {
         method: "POST",
         headers: {
@@ -118,9 +124,9 @@ export async function createServer() {
         addErrorMessageToHTML("label[for='serverName']", "server name length must be greater than 2");
         return;
     }
-    const json = await response.json();
+    const json: {serverID: number} = await response.json();
     createServerCircle(json.serverID, serverName);
-    await addServerToUser(localStorage.getItem("token"), json.serverID);
+    await addServerToUser(localStorage.getItem("token")!, json.serverID);
     await loadUsersInfo();
     console.log(user);
     getServerInformationByID(json.serverID).then(serverInfo => {
@@ -129,6 +135,6 @@ export async function createServer() {
     })
 }
 
-document.getElementById("createServerButton").onclick = function () {
+document.getElementById("createServerButton")!.onclick = function () {
     createServer();
 }

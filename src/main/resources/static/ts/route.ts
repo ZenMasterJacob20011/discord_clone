@@ -2,7 +2,7 @@ import {loadProfilePage} from "./profilepage.js";
 import {loadProfileChannel, loadServerChannel, loadServerPage} from "./serverpage.js";
 import {getCurrentChannelID, getCurrentServerID, getServerInformationByID} from "./util.js";
 
-let lastServerID = null;
+let lastServerID: string | null = null;
 
 
 /**
@@ -10,7 +10,7 @@ let lastServerID = null;
  * but instead to be used within another function
  * @returns {Promise<void>}
  */
-const router = async () => {
+const router = async (): Promise<void> => {
     const re = /\/\d+|\/@me/g
     const href = window.location.pathname.match(re);
     console.log("href: " + href);
@@ -29,7 +29,7 @@ const router = async () => {
         }
     } else if (href.length > 1) {
         const serverID = getCurrentServerID();
-        const channelID = getCurrentChannelID();
+        const channelID = await getCurrentChannelID();
         if (serverID === "@me") {
             if ('' + lastServerID === serverID) {
                 loadProfileChannel(channelID);
@@ -54,15 +54,15 @@ const router = async () => {
  * used to navigate to another page. will push the state of the page to the history api for forward and backward traversal
  * @param href {String} the page to navigate to
  */
-export function navigateTo(href) {
-    history.pushState(null, null, `http://localhost:8080/server/${href}`);
+export function navigateTo(href: string) {
+    history.pushState(null, null!, `http://localhost:8080/server/${href}`);
     router();
 }
 
 document.addEventListener("click", e => {
-    if (e.target.matches("[data-link]")) {
+    if ((<Element>e.target)!.matches("[data-link]")) {
         e.preventDefault();
-        navigateTo(e.target.id);
+        navigateTo((<Element>e.target).id);
     }
 })
 

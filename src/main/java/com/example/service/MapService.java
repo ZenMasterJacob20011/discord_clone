@@ -61,7 +61,7 @@ public class MapService {
         UserDTO userDTO = new UserDTO();
         userDTO.setUserID(user.getUserID());
         userDTO.setUsername(user.getUsername());
-        userDTO.setServerList(user.getServerList());
+        userDTO.setServerList(user.getServers());
         userDTO.setAcceptedFriends(user.getAcceptedFriends());
         userDTO.setPendingFriends(user.getPendingFriends());
         return userDTO;

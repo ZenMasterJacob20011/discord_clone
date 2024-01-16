@@ -4,10 +4,10 @@ export let jwt = () => {
     }
     window.location.href = "http://localhost:8080/login";
 };
-export const decodedJWTJSON = parseJwt(jwt());
-export let user;
+export const decodedJWTJSON: {sub: string} = parseJwt(<string>jwt());
+export let user: {userID: number, username: string, serverList: any, acceptedFriends: any, pendingFriends: any};
 
-function parseJwt(token) {
+function parseJwt(token: string) {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
@@ -17,7 +17,7 @@ function parseJwt(token) {
     return JSON.parse(jsonPayload);
 }
 
-export function Circle(width, height) {
+export function Circle(width: string, height: string) {
     return `
         <div style="width: ${width}; height: ${height}; position: absolute" class="circle">
             
@@ -41,7 +41,7 @@ export function SearchBar() {
  * @param dateTime {string} the datetime in the form YYYY-MM-DDTHH:MM:SS.SSS e.g. 2023-12-15T19:46:41.0922186
  * @returns {string} human readable datetime e.g. Today at 7:46 PM
  */
-export function convertDateTimeToString(dateTime) {
+export function convertDateTimeToString(dateTime: string): string {
     const dateTimeObject = new Date(dateTime);
     const today = new Date();
     const yesterday = today.getDay() - 1 <= -1 ? 6 : today.getDay() - 1;
@@ -62,7 +62,7 @@ export function convertDateTimeToString(dateTime) {
  * @param timestamp {string} the time the message was sent
  * @returns the html
  */
-export function MessageWithProfilePicture(message, username, timestamp) {
+export function MessageWithProfilePicture(message: string, username: string, timestamp: string) {
     return `
         <div style="height: 48px; margin-top: 17px" data-timestamp="${timestamp}" data-username="${username}">
             <span style="position: absolute">${Circle("40px", "40px")}</span>
@@ -86,7 +86,7 @@ export function MessageWithProfilePicture(message, username, timestamp) {
  * @param timestamp {string} the timestamp stored in data-timestamp attribute
  * @returns the html
  */
-export function Message(message, username, timestamp) {
+export function Message(message: string, username: string, timestamp: string) {
     return `
         <div style="padding-left: 50px" data-timestamp="${timestamp}" data-username="${username}">
             <span style="font-size: 16px; font-weight: 400" class="small">
@@ -96,7 +96,7 @@ export function Message(message, username, timestamp) {
     `;
 }
 
-export function inviteFriendToServer(username, serverID) {
+export function inviteFriendToServer(username: string, serverID: string) {
 
 }
 
@@ -104,44 +104,54 @@ export async function loadUsersInfo() {
     const response = await fetch('http://localhost:8080/user/getUserInfo', {
         method: "GET",
         headers: {
-            "Authorization": jwt()
+            "Authorization": <string>jwt()
         }
     })
     user = await response.json();
 }
 
+// @ts-ignore
 await loadUsersInfo();
 
 export function loadNameTag() {
-    document.getElementById("name").innerText = decodedJWTJSON.sub;
+    const nameElement = document.getElementById("name")
+    if(nameElement) {
+        nameElement.innerText = decodedJWTJSON.sub
+    }
 }
 
+// @ts-ignore
 Date.prototype.addMinutes = function (m) {
     this.setTime(this.getTime() + (m * 60 * 1000));
     return this;
 }
 
-export function addErrorMessageToHTML(cssSelector, errorMessage) {
+export function addErrorMessageToHTML(cssSelector: string, errorMessage: string) {
     const css = document.querySelector(cssSelector);
+    // @ts-ignore
     css.innerText = errorMessage;
+    // @ts-ignore
     css.classList.add("text-danger")
 }
 
 export function handleCopyInviteLinkButton() {
+    // @ts-ignore
     $("#copy-invite").on("click", function () {
-        const inviteCode = document.getElementById("inviteCode").innerText;
-        navigator.clipboard.writeText(inviteCode);
+        const inviteCode = document.getElementById("inviteCode");
+        if(inviteCode) {
+            navigator.clipboard.writeText(inviteCode.innerText);
+        }
     });
 }
 
-export async function addServerToUser(jwt, serverID) {
+export async function addServerToUser(jwt: string, serverID: number) {
     const response = await fetch("http://localhost:8080/server/addServerToUser", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "Authorization": jwt
         },
-        body: serverID
+        body: ''+serverID
     })
     const responseJSON = await response.json();
     console.log(responseJSON);
@@ -151,12 +161,12 @@ window.onload = function () {
     loadNameTag();
 }
 
-export async function getInviteLink(serverID) {
+export async function getInviteLink(serverID: string) {
     return fetch(`http://localhost:8080/invite/getInviteLink/${serverID}`, {
         method: "GET",
         headers: {
             "content-type": "application/json",
-            "authorization": jwt()
+            "authorization": <string>jwt()
         }
     }).then(response => {
         if (response.ok) {
@@ -173,7 +183,7 @@ export async function getInviteLink(serverID) {
  * @param server_id {String} the id of the server e.g. 1
  * @returns The JSON object containing server information
  */
-export async function getServerInformationByID(server_id) {
+export async function getServerInformationByID(server_id: number | string) {
     // if (localStorage.getItem(server_id) === null){
     return fetch(`http://localhost:8080/server/${server_id}/getServerInfo`, {
         method: "GET"
@@ -196,28 +206,28 @@ export async function getServerInformationByID(server_id) {
  * @param username
  * @returns {Promise<Response>}
  */
-export function getDirectMessageChannelID(username) {
+export function getDirectMessageChannelID(username: string): Promise<Response> {
     return fetch(`http://localhost:8080/server/directmessage/${username}`, {
         method: "GET",
         headers: {
-            "authorization": jwt()
+            "authorization": <string>jwt()
         }
     }).then(r => {
         return r.json();
     });
 }
 
-export function getCurrentServerID() {
+export function getCurrentServerID(): string | number {
     const re = /\/\d+|\/@me/g
-    return window.location.pathname.match(re)[0].substring(1);
+    return window.location.pathname.match(re)![0].substring(1);
 }
 
-export function getCurrentChannelID() {
+export function getCurrentChannelID(): number | Promise<number> {
     const re = /\/\d+|@me/g
-    if (window.location.pathname.match(re)[1] === undefined) {
+    if (window.location.pathname.match(re)![1] === undefined) {
         return getServerInformationByID(getCurrentServerID()).then(serverInfo => {
             return serverInfo.channels[0].channelID;
         })
     }
-    return Number(window.location.pathname.match(re)[1].substring(1));
+    return Number(window.location.pathname.match(re)![1].substring(1));
 }
