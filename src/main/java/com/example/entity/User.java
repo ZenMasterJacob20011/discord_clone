@@ -21,8 +21,12 @@ public class User {
 
     private String JWT;
 
+    @JoinTable(name = "user_server",
+            joinColumns = @JoinColumn(referencedColumnName = "userID"),
+            inverseJoinColumns = @JoinColumn(referencedColumnName = "serverid")
+    )
     @ManyToMany(cascade = CascadeType.PERSIST)
-    private List<Server> serverList;
+    private List<Server> servers;
 
     @ManyToMany(cascade = CascadeType.ALL)
     private List<User> acceptedFriends;
@@ -31,7 +35,7 @@ public class User {
     private List<User> pendingFriends;
 
     public User() {
-        serverList = new ArrayList<>();
+        servers = new ArrayList<>();
         acceptedFriends = new ArrayList<>();
         pendingFriends = new ArrayList<>();
     }
@@ -79,12 +83,12 @@ public class User {
     }
 
     @JsonIgnore
-    public List<Server> getServerList() {
-        return serverList;
+    public List<Server> getServers() {
+        return servers;
     }
 
-    public void setServerList(List<Server> serverList) {
-        this.serverList = serverList;
+    public void setServers(List<Server> serverList) {
+        this.servers = serverList;
     }
 
     @JsonIgnore
@@ -105,7 +109,7 @@ public class User {
     }
 
     public void addServer(Server server) {
-        serverList.add(server);
+        servers.add(server);
     }
 
     public void addAcceptedFriend(User user) {
