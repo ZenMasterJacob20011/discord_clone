@@ -5,6 +5,7 @@ target/
 !**/src/test/**/target/
 *.js
 *.js.map
+*.env
 
 ### STS ###
 .apt_generated
