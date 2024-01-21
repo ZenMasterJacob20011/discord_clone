@@ -1,4 +1,5 @@
 import {
+    addMinutes,
     getCurrentChannelID,
     handleCopyInviteLinkButton, jwt,
     loadNameTag, Message, MessageWithProfilePicture
@@ -12,8 +13,7 @@ loadSideServers();
 handleCopyInviteLinkButton()
 
 
-async function sendMessage(channelID: number) {
-    const input = (<HTMLInputElement>document.getElementById("typedinput")).value;
+export async function sendMessage(channelID: number, message: string) {
     const response = await fetch(`http://localhost:8080/server/${channelID}/postmessages`, {
         method: 'POST',
         headers: {
@@ -22,11 +22,10 @@ async function sendMessage(channelID: number) {
             'Authorization': <string>jwt()
         },
         body: JSON.stringify({
-                'message': input
+                'message': message
             }
         )
     });
-    (<HTMLInputElement>document.getElementById("typedinput")).value = '';
     console.log(response.status);
     if (response.status === 403) {
         window.location.href = "http://localhost:8080";
@@ -60,8 +59,7 @@ export async function addMessage(jsonData: { message: string, username: string, 
         previousUsername = previousMessageHTML!.attributes.getNamedItem("data-username")!.nodeValue;
     }
     const hasSevenMinutesPassed = () => {
-        // @ts-ignore
-        const previousDatePlusSeven = new Date(<string>previousTimestamp).addMinutes(7);
+        const previousDatePlusSeven = addMinutes(new Date(<string>previousTimestamp),7);
         const currentDate = new Date(jsonData.postTime);
         return currentDate >= previousDatePlusSeven;
 
@@ -167,7 +165,7 @@ function ServerChannelsLayout() {
 }
 
 function ServerChannel(channelInfo: {channelID: number, channelName: string}) {
-    const theHTML = `
+    return `
         <button class="d-flex justify-content-between p-1 rounded w-100 channel" id="${channelInfo.channelID}">
             <div>
                 <svg class="icon" aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.99 3.16A1 1 0 1 0 9 2.84L8.15 8H4a1 1 0 0 0 0 2h3.82l-.67 4H3a1 1 0 1 0 0 2h3.82l-.8 4.84a1 1 0 0 0 1.97.32L8.85 16h4.97l-.8 4.84a1 1 0 0 0 1.97.32l.86-5.16H20a1 1 0 1 0 0-2h-3.82l.67-4H21a1 1 0 1 0 0-2h-3.82l.8-4.84a1 1 0 1 0-1.97-.32L15.15 8h-4.97l.8-4.84ZM14.15 14l.67-4H9.85l-.67 4h4.97Z" clip-rule="evenodd" class=""></path></svg>
@@ -179,8 +177,6 @@ function ServerChannel(channelInfo: {channelID: number, channelName: string}) {
             </div>
         </button>
     `;
-    // @ts-ignore
-    return $.parseHTML(theHTML);
 }
 
 function loadServerChannels(serverInfo: {serverID: number, channels: any}) {
@@ -201,8 +197,7 @@ function loadServerChannels(serverInfo: {serverID: number, channels: any}) {
     console.log(serverInfo);
     const channels = serverInfo.channels;
     for (let channel of channels) {
-        // @ts-ignore
-        $(ServerChannel(channel)).appendTo(document.getElementById("channels"));
+        document.getElementById("channels")!.insertAdjacentHTML("beforeend", ServerChannel(channel));
         document.getElementById("channels")!.lastElementChild!.addEventListener("click", function () {
             navigateTo(`${serverInfo.serverID}/${channel.channelID}`);
         })
@@ -232,7 +227,9 @@ export function loadServerChannel(channelID: number) {
     document.getElementById("typedinput")!.addEventListener("keydown", e => {
         if (e.key === 'Enter') {
             if ((<HTMLInputElement>document.getElementById("typedinput")).value !== "" && document.activeElement === document.getElementById("typedinput")) {
-                sendMessage(channelID);
+                const input = (<HTMLInputElement>document.getElementById("typedinput")).value;
+                sendMessage(channelID, input);
+                (<HTMLInputElement>document.getElementById("typedinput")).value = '';
             }
         }
     })
@@ -246,7 +243,9 @@ export function loadProfileChannel(channelID: number) {
     document.getElementById("typedinput")!.addEventListener("keydown", e => {
         if (e.key === 'Enter') {
             if ((<HTMLInputElement>document.getElementById("typedinput")).value !== "" && document.activeElement === document.getElementById("typedinput")) {
-                sendMessage(channelID);
+                const input = (<HTMLInputElement>document.getElementById("typedinput")).value;
+                sendMessage(channelID, input);
+                (<HTMLInputElement>document.getElementById("typedinput")).value = '';
             }
         }
     })
