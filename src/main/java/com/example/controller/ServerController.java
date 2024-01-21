@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import com.example.dto.ChannelDTO;
 import com.example.dto.MessageDTO;
 import com.example.dto.ServerDTO;
 import com.example.entity.Channel;
@@ -55,7 +56,6 @@ public class ServerController {
         try {
             databaseService.addServerToUser(serverID, user.getUsername());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.FOUND).body(e.getMessage());
         }
         return ResponseEntity.ok(user);
@@ -113,10 +113,13 @@ public class ServerController {
 
     @GetMapping("/directmessage/{username}")
     @ResponseBody
-    public Integer getDirectMessageChannelID(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(value = "username") String userTwo) {
+    public ResponseEntity<?> getDirectMessageChannelID(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(value = "username") String userTwo) {
         String userOne = jwtService.getUsernameFromJWT(authorization);
-        Channel channel = databaseService.getDirectMessageChannelByUsers(userOne, userTwo);
-        return channel.getChannelID();
+        try {
+            return ResponseEntity.ok(mapService.getChannelByID(databaseService.getDirectMessageChannelByUsers(userOne,userTwo).getChannelID()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Could not find/create channel with userOne: " + userOne + " and userTwo: " + userTwo + " in it");
+        }
     }
 
     @GetMapping("/{serverPath:\\d+|@me}/{channelPath:\\d+}")

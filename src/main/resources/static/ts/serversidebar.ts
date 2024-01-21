@@ -1,12 +1,13 @@
 import {
     addErrorMessageToHTML,
-    addServerToUser, Circle,
+    addServerToUser, Circle, getDirectMessageChannelByUsername,
     getInviteLink,
-    getServerInformationByID, inviteFriendToServer,
+    getServerInformationByID,
     loadUsersInfo,
     user
 } from "./util.js";
 import {subscribeToChannel} from "./websocket.js";
+import {sendMessage} from "./serverpage.js";
 
 function ServerCircle(serverID: number, serverName: string) {
     return `
@@ -35,74 +36,64 @@ export async function loadSideServers() {
 }
 
 function handleContextMenu() {
-    // @ts-ignore
-    let $contextMenu = $("#contextMenu");
+    let contextMenu = document.getElementById("contextMenu")!;
     let curServerID: string;
     let serverInfo: {serverName: string};
-    // @ts-ignore
-    $("body").on("contextmenu", "[data-link]", function (e: MouseEvent) {
-        console.log(e);
-        if ((<HTMLElement>e.target).id === "@me") {
+    document.body.addEventListener("contextmenu", function (e) {
+        if((<Element>e.target)!.matches("[data-link]")) {
+            e.preventDefault();
+            console.log(e);
+            if ((<HTMLElement>e.target).id === "@me") {
+                return false;
+            }
+            contextMenu.style.display = "block"
+            contextMenu.style.left = String(e.pageX)+"px";
+            contextMenu.style.top = String(e.pageY)+"px";
+            curServerID = (<HTMLElement>e.target).id;
+            getServerInformationByID(Number(curServerID)).then(r => {
+                serverInfo = r;
+            });
             return false;
         }
-        $contextMenu.css({
-            display: "block",
-            left: e.pageX,
-            top: e.pageY
-        });
-        curServerID = (<HTMLElement>e.currentTarget).id;
-        getServerInformationByID(Number(curServerID)).then(r => {
-            serverInfo = r;
-        });
-        return false;
     });
-    $contextMenu.on("click", "#invite-people", function () {
+    contextMenu.querySelector("#invite-people")!.addEventListener("click", function () {
         getInviteLink(curServerID).then(responseJSON => {
-            $contextMenu.hide();
-            // @ts-ignore
-            $("#insertservername").text(`Invite friends to ${serverInfo.serverName} server`);
-
-            function createInviteFriendButtonBars() {
-                getServerInformationByID(Number(curServerID)).then(server => {
-                    function createInviteFriendButtonBar(user: {username: string}) {
-                        document.getElementById("invite-friends-list")!.insertAdjacentHTML("beforeend",
-                            `
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center">
-                                    ${Circle("32px", "32px")}
-                                    <div style="padding-left: 40px">
-                                        ${user.username}
-                                    </div>
-                                </div>
-                                <div>
-                                    <button class="invite-button btn btn-outline-success btn-sm text-white">Invite</button>
+            contextMenu.style.display = "none";
+            document.getElementById("insertservername")!.innerText = `Invite friends to ${serverInfo.serverName} server`
+            getServerInformationByID(Number(curServerID)).then(server => {
+                function createInviteFriendButtonBar(user: {username: string}) {
+                    document.getElementById("invite-friends-list")!.insertAdjacentHTML("beforeend",
+                        `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                ${Circle("32px", "32px")}
+                                <div style="padding-left: 40px">
+                                    ${user.username}
                                 </div>
                             </div>
-                            `
-                        );
-                        document.getElementsByClassName("invite-button")!
-                            .item(document.getElementsByClassName("invite-button").length - 1)!
-                            .addEventListener("click", function () {
-                                inviteFriendToServer(user.username, server.id);
-                            })
-                    }
+                            <div>
+                                <button class="invite-button btn btn-outline-success btn-sm text-white">Invite</button>
+                            </div>
+                        </div>
+                        `
+                    );
+                    document.getElementsByClassName("invite-button")!
+                        .item(document.getElementsByClassName("invite-button").length - 1)!
+                        .addEventListener("click", function () {
+                            inviteFriendToServer(user.username, ''+server.serverID);
+                        })
+                }
 
-                    document.getElementById("invite-friends-list")!.innerHTML = "";
-                    user.acceptedFriends.forEach(createInviteFriendButtonBar)
-                })
+                document.getElementById("invite-friends-list")!.innerHTML = "";
+                user.acceptedFriends.forEach(createInviteFriendButtonBar)
+            })
                 document.getElementById("invite-friends-list")
-            }
-
-            createInviteFriendButtonBars()
             let inviteCode = responseJSON.invites[responseJSON.invites.length - 1].inviteCode;
-            // @ts-ignore
-            $("#inviteCode").text(`http://localhost:8080/invite/${inviteCode}`);
+            document.getElementById("inviteCode")!.innerText = `http://localhost:8080/invite/${inviteCode}`
         });
     })
-    // @ts-ignore
-    $('body').click(function () {
-        // @ts-ignore
-        $($contextMenu).hide();
+    document.body.addEventListener("click", function (){
+        contextMenu.style.display = "none";
     })
 }
 
@@ -134,6 +125,15 @@ export async function createServer() {
         subscribeToChannel(serverInfo.channels[0].channelID);
     })
 }
+
+function inviteFriendToServer(username: string, serverID: string) {
+    getDirectMessageChannelByUsername(username).then(channel => {
+        getInviteLink(serverID).then(response => {
+            sendMessage(channel.channelID,`http://localhost:8080/invite/${response.invites[response.invites.length-1].inviteCode}`);
+        })
+    });
+}
+
 
 document.getElementById("createServerButton")!.onclick = function () {
     createServer();

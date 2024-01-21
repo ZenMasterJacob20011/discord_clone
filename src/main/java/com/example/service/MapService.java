@@ -1,11 +1,14 @@
 package com.example.service;
 
+import com.example.dto.ChannelDTO;
 import com.example.dto.MessageDTO;
 import com.example.dto.ServerDTO;
 import com.example.dto.UserDTO;
+import com.example.entity.Channel;
 import com.example.entity.Message;
 import com.example.entity.Server;
 import com.example.entity.User;
+import com.example.repository.ChannelRepository;
 import com.example.repository.MessageRepository;
 import com.example.repository.ServerRepository;
 import com.example.repository.UserRepository;
@@ -28,6 +31,9 @@ public class MapService {
 
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private ChannelRepository channelRepository;
 
     public UserDTO getUserByJwt(String JWT) throws Exception {
         if (userRepository.findUserByJWT(JWT).isPresent()) {
@@ -55,6 +61,13 @@ public class MapService {
             return convertMessageToDTO(messageRepository.findById(messageID).get());
         }
         throw new NoSuchElementException("Could not find Message with ID " + messageID + " in database");
+    }
+
+    public ChannelDTO getChannelByID(Integer channelID) throws Exception {
+        if(channelRepository.findById(channelID).isPresent()){
+            return convertChannelToDTO(channelRepository.findById(channelID).get());
+        }
+        throw new Exception("Could not find Channel with ID " + channelID + " in database");
     }
 
     private UserDTO convertPersonIdentifierToDTO(User user) {
@@ -85,5 +98,14 @@ public class MapService {
         messageDTO.setMessageID(message.getMessageID());
         messageDTO.setPostTime(message.getPostTime());
         return messageDTO;
+    }
+
+    private ChannelDTO convertChannelToDTO(Channel channel){
+        ChannelDTO channelDTO = new ChannelDTO();
+        channelDTO.setChannelName(channel.getChannelName());
+        channelDTO.setMessages(channel.getMessages());
+        channelDTO.setChannelID(channel.getChannelID());
+        channelDTO.setServerID(channel.getServer().getServerID());
+        return channelDTO;
     }
 }

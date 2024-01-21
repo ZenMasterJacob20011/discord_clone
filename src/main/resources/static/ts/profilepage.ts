@@ -1,6 +1,7 @@
 import {Circle, jwt, SearchBar, user} from "./util.js";
 import {navigateTo} from "./route.js";
 import {subscribeToChannel} from "./websocket.js";
+
 /**
  * Contains HTML for the top of the profile sidebar
  * @returns {string} The HTML for top profile sidebar
@@ -244,8 +245,7 @@ function loadProfileMainContentTop() {
      * @returns {Promise<void>}
      */
     document.getElementById("pending-friend")!.onclick = async function (): Promise<void> {
-        let userJSON = await user;
-        let friendRequests = userJSON.pendingFriends;
+        let friendRequests = user.pendingFriends;
         document.getElementById("main-content-mid")!.innerHTML = PendingFriendsContainer(friendRequests.length);
         for (const friendRequest of friendRequests) {
             document.getElementById("pendingfriendscontainer")!.innerHTML += ProfileMainContentPendingFriend(friendRequest.username);
@@ -278,7 +278,7 @@ function loadProfileMainContentTop() {
      * @returns the html
      */
     function ProfileMainContentAllFriend(username: string) {
-        const theHTML = `
+        return `
             <div class="row align-items-center justify-content-between">
                 <div class="col d-flex align-items-center">
                     ${Circle("40px", "40px")}
@@ -298,8 +298,6 @@ function loadProfileMainContentTop() {
                 <div class="divider mt-2 mb-2"></div>
             </div>
                 `;
-        // @ts-ignore
-        return $.parseHTML(theHTML);
     }
 
     function AllFriendsContainer(friendsLength: number) {
@@ -323,8 +321,7 @@ function loadProfileMainContentTop() {
         mainContentPage!.innerHTML = AllFriendsContainer(acceptedFriends.length);
         const allFriendsContainer = document.getElementById("allfriendscontainer")!;
         for (const acceptedFriend of acceptedFriends) {
-            // @ts-ignore
-            $(ProfileMainContentAllFriend(acceptedFriend.username)).appendTo(allFriendsContainer);
+            allFriendsContainer.insertAdjacentHTML("beforeend", ProfileMainContentAllFriend(acceptedFriend.username));
             (<HTMLButtonElement>allFriendsContainer.getElementsByClassName("message-button").item(allFriendsContainer.getElementsByClassName("message-button").length - 1))!.onclick = function () {
                 fetch(`http://localhost:8080/server/directmessage/${acceptedFriend.username}`, {
                     method: "GET",
@@ -332,10 +329,10 @@ function loadProfileMainContentTop() {
                         "authorization": <string>jwt()
                     }
                 })
-                    .then(response => response.text())
-                    .then(channelID => {
-                        subscribeToChannel(channelID);
-                        navigateTo(`@me/${channelID}`)
+                    .then(response => response.json())
+                    .then(channel => {
+                        subscribeToChannel(channel.channelID);
+                        navigateTo(`@me/${channel.channelID}`)
                     });
             }
             const moreButton = <HTMLButtonElement>(allFriendsContainer.getElementsByClassName("more-button").item(allFriendsContainer.getElementsByClassName("more-button").length - 1))

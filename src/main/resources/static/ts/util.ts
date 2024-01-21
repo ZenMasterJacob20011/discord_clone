@@ -1,11 +1,13 @@
+import {addMessage} from "./serverpage";
+
 export let jwt = () => {
     if (localStorage.getItem("token")) {
         return localStorage.getItem("token");
     }
     window.location.href = "http://localhost:8080/login";
 };
-export const decodedJWTJSON: {sub: string} = parseJwt(<string>jwt());
-export let user: {userID: number, username: string, serverList: any, acceptedFriends: any, pendingFriends: any};
+export const decodedJWTJSON: { sub: string } = parseJwt(<string>jwt());
+export let user: { userID: number, username: string, serverList: any, acceptedFriends: any, pendingFriends: any };
 
 function parseJwt(token: string) {
     const base64Url = token.split('.')[1];
@@ -96,10 +98,6 @@ export function Message(message: string, username: string, timestamp: string) {
     `;
 }
 
-export function inviteFriendToServer(username: string, serverID: string) {
-
-}
-
 export async function loadUsersInfo() {
     const response = await fetch('http://localhost:8080/user/getUserInfo', {
         method: "GET",
@@ -115,30 +113,31 @@ await loadUsersInfo();
 
 export function loadNameTag() {
     const nameElement = document.getElementById("name")
-    if(nameElement) {
+    if (nameElement) {
         nameElement.innerText = decodedJWTJSON.sub
     }
 }
 
-// @ts-ignore
-Date.prototype.addMinutes = function (m) {
-    this.setTime(this.getTime() + (m * 60 * 1000));
-    return this;
+
+export function addMinutes(date: Date, minutes: number): Date {
+    date.setTime(date.getTime() + (minutes * 60 * 1000));
+    return date;
 }
 
 export function addErrorMessageToHTML(cssSelector: string, errorMessage: string) {
-    const css = document.querySelector(cssSelector);
-    // @ts-ignore
-    css.innerText = errorMessage;
-    // @ts-ignore
-    css.classList.add("text-danger")
+    const css: HTMLElement | null = document.querySelector(cssSelector);
+    if (css) {
+        css.innerText = errorMessage;
+        css.classList.add("text-danger")
+        return
+    }
+    throw Error("Could not find css selector " + cssSelector);
 }
 
 export function handleCopyInviteLinkButton() {
-    // @ts-ignore
-    $("#copy-invite").on("click", function () {
+    document.getElementById("copy-invite")!.addEventListener("click", function () {
         const inviteCode = document.getElementById("inviteCode");
-        if(inviteCode) {
+        if (inviteCode) {
             navigator.clipboard.writeText(inviteCode.innerText);
         }
     });
@@ -151,7 +150,7 @@ export async function addServerToUser(jwt: string, serverID: number) {
             "Content-Type": "application/json",
             "Authorization": jwt
         },
-        body: ''+serverID
+        body: '' + serverID
     })
     const responseJSON = await response.json();
     console.log(responseJSON);
@@ -161,7 +160,13 @@ window.onload = function () {
     loadNameTag();
 }
 
-export async function getInviteLink(serverID: string) {
+export async function getInviteLink(serverID: string): Promise<{
+    channels: [{ channelID: number, channelName: string }],
+    invites: [{ inviteCode: string, inviter: string, server: { serverID: number, serverName: string } }],
+    serverID: number,
+    serverName: string,
+    users: [{ userID: number, username: string, password: string, pendingFriends: [], jwt: string }]
+}> {
     return fetch(`http://localhost:8080/invite/getInviteLink/${serverID}`, {
         method: "GET",
         headers: {
@@ -183,7 +188,15 @@ export async function getInviteLink(serverID: string) {
  * @param server_id {String} the id of the server e.g. 1
  * @returns The JSON object containing server information
  */
-export async function getServerInformationByID(server_id: number | string) {
+export async function getServerInformationByID(server_id: number | string): Promise<{
+    channels: [{
+        channelID: number;
+    }],
+    invites: [{}],
+    serverID: number,
+    serverName: string,
+    users: [{}]
+}> {
     // if (localStorage.getItem(server_id) === null){
     return fetch(`http://localhost:8080/server/${server_id}/getServerInfo`, {
         method: "GET"
@@ -204,9 +217,14 @@ export async function getServerInformationByID(server_id: number | string) {
 /**
  * This will fetch the server with only the given two users in it. The object with be a serverDTO as JSON
  * @param username
- * @returns {Promise<Response>}
+ * @returns {Promise<{channelID: number, channelName: string, serverID: number, messages: [{}]}>}
  */
-export function getDirectMessageChannelID(username: string): Promise<Response> {
+export function getDirectMessageChannelByUsername(username: string): Promise<{
+    channelID: number,
+    channelName: string,
+    serverID: number,
+    messages: [{}]
+}> {
     return fetch(`http://localhost:8080/server/directmessage/${username}`, {
         method: "GET",
         headers: {
@@ -222,8 +240,11 @@ export function getCurrentServerID(): string | number {
     return window.location.pathname.match(re)![0].substring(1);
 }
 
-export function getCurrentChannelID(): number | Promise<number> {
+export function getCurrentChannelID(): number | Promise<number> | null {
     const re = /\/\d+|@me/g
+    if (getCurrentServerID() === "@me" && window.location.pathname.match(re)![1] === undefined) {
+        return null
+    }
     if (window.location.pathname.match(re)![1] === undefined) {
         return getServerInformationByID(getCurrentServerID()).then(serverInfo => {
             return serverInfo.channels[0].channelID;

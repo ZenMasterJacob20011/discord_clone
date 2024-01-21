@@ -63,7 +63,7 @@ public class User {
         this.username = username;
     }
 
-    //add ignore
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -73,7 +73,7 @@ public class User {
     }
 
 
-    //add ignore
+    @JsonIgnore
     public String getJWT() {
         return JWT;
     }
@@ -99,7 +99,7 @@ public class User {
     public void setAcceptedFriends(List<User> acceptedFriends) {
         this.acceptedFriends = acceptedFriends;
     }
-
+    @JsonIgnore
     public List<User> getPendingFriends() {
         return pendingFriends;
     }
