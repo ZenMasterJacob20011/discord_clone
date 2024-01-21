@@ -3,7 +3,7 @@ import {getServerInformationByID, jwt, user} from "./util.js";
 
 // @ts-ignore
 let stompClient = null
-let subscribedChannels: string[] = [];
+let subscribedChannels: number[] = [];
 
 function connect() {
     console.log(user);
@@ -35,7 +35,7 @@ function disconnect() {
     console.log("Disconnected");
 }
 
-export function subscribeToChannel(channelID: string) {
+export function subscribeToChannel(channelID: number) {
     if (subscribedChannels.includes(channelID)){
         return;
     }
@@ -44,7 +44,7 @@ export function subscribeToChannel(channelID: string) {
         console.log(messageJSON);
         addMessage(JSON.parse(messageJSON.body));
     }, {authorization: jwt()});
-    subscribedChannels.push(''+channelID);
+    subscribedChannels.push(channelID);
 }
 
 connect();
