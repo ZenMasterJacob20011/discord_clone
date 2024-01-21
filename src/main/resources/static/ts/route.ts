@@ -29,7 +29,7 @@ const router = async (): Promise<void> => {
         }
     } else if (href.length > 1) {
         const serverID = getCurrentServerID();
-        const channelID = await getCurrentChannelID();
+        const channelID = await getCurrentChannelID()!;
         if (serverID === "@me") {
             if ('' + lastServerID === serverID) {
                 loadProfileChannel(channelID);
@@ -66,7 +66,7 @@ document.addEventListener("click", e => {
     }
 })
 
-window.addEventListener("popstate", (e) => {
+window.addEventListener("popstate", () => {
     router();
 })
 
