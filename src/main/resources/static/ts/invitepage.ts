@@ -15,10 +15,8 @@ function addServerToUser(serverID: number | string) {
 
 
 
-// @ts-ignore
-$("#accept-invite").on("click",function (){
-    // @ts-ignore
-    const serverID = $("button[serverid]").attr("serverid");
+document.getElementById("accept-invite")!.addEventListener("click", function () {
+    const serverID = document.querySelector("button[serverid]")!.getAttribute("serverid")!;
     addServerToUser(serverID);
     window.location.href = `http://localhost:8080/server/${serverID}`;
 })
